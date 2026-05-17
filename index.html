@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sage · STARDUST Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08080A;--surface:#0F0F12;--card:#161619;
+  --border:#252529;--border2:#333338;
+  --gold:#C9A84C;--gold-dim:#6B5520;--gold-soft:#E8C97A;
+  --teal:#0D9488;--teal-lt:#5EEAD4;
+  --violet:#7C3AED;--violet-lt:#C4B5FD;
+  --amber:#D97706;--amber-lt:#FCD34D;
+  --rose:#E11D48;--rose-lt:#FDA4AF;
+  --white:#F2F2F4;--body:#C8C8D0;--muted:#88889A;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--white);font-family:"DM Sans",sans-serif;font-weight:400;display:flex;flex-direction:column}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 1.1rem;height:48px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;z-index:50}
+.logo{font-family:"EB Garamond",serif;font-size:1.2rem;font-weight:700;letter-spacing:.12em}
+.logo span{color:var(--gold)}
+.logo-sub{font-family:"JetBrains Mono",monospace;font-size:.55rem;letter-spacing:.18em;color:var(--gold-dim);text-transform:uppercase;margin-left:.6rem}
+.vtog{display:flex;background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.vbtn{padding:.28rem .7rem;font-family:"JetBrains Mono",monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:none;border:none;cursor:pointer;transition:all .15s}
+.vbtn.active{background:var(--gold-dim);color:var(--gold-soft)}
+.vbtn:hover:not(.active){color:var(--white)}
+.ibtn{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;transition:all .15s}
+.ibtn:hover{border-color:var(--border2);color:var(--white)}
+.ibtn.active{border-color:var(--gold-dim);color:var(--gold-soft);background:rgba(201,168,76,.08)}
+
+/* LAYOUT */
+.app-body{flex:1;display:flex;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:210px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sb-sec{padding:.55rem 1rem .35rem;font-family:"JetBrains Mono",monospace;font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.sb-sec.core{color:var(--gold-dim)}.sb-sec.npo{color:var(--violet)}.sb-sec.biz{color:var(--amber)}
+.tree-scroll{flex:1;overflow-y:auto;padding:.35rem 0}
+.tree-scroll::-webkit-scrollbar{width:2px}.tree-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.tnode{display:flex;align-items:center;gap:.35rem;padding:.27rem 1rem;cursor:pointer;font-size:.77rem;color:var(--body);transition:all .12s;border-left:2px solid transparent;user-select:none}
+.tnode:hover{background:rgba(201,168,76,.05);color:var(--white)}
+.tnode.active{background:rgba(201,168,76,.08);border-left-color:var(--gold);color:var(--gold-soft)}
+.tnode.child{padding-left:1.6rem;font-size:.72rem}
+.tnode.grand{padding-left:2.3rem;font-size:.68rem;color:var(--muted)}
+.tnode.grand:hover{color:var(--body)}.tnode.grand.active{color:var(--gold-soft)}
+.tnode.npo-n{color:var(--violet-lt);opacity:.85}.tnode.npo-n.active{border-left-color:var(--violet);color:var(--violet-lt);background:rgba(124,58,237,.08)}
+.tnode.biz-n{color:var(--amber-lt);opacity:.85}.tnode.biz-n.active{border-left-color:var(--amber);color:var(--amber-lt);background:rgba(217,119,6,.08)}
+.ncmd{font-family:"JetBrains Mono",monospace;font-size:.53rem;margin-left:auto;opacity:.65}
+.ncmd.tc{color:var(--teal)}.ncmd.vc{color:var(--violet-lt)}.ncmd.ac{color:var(--amber-lt)}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.breadcrumb{padding:.42rem 1.1rem;background:var(--surface);border-bottom:1px solid var(--border);font-family:"JetBrains Mono",monospace;font-size:.63rem;color:var(--muted);display:flex;align-items:center;gap:.35rem;flex-shrink:0}
+.bc{color:var(--body);cursor:pointer}.bc:hover{color:var(--gold)}.bc.active{color:var(--gold-soft)}.bc-arr{color:var(--border2)}
+.code-view{background:var(--surface);border-bottom:1px solid var(--border);padding:.6rem 1.1rem;font-family:"JetBrains Mono",monospace;font-size:.67rem;color:var(--body);flex-shrink:0;max-height:125px;overflow-y:auto;display:none}
+.code-view.on{display:block}.cv-p{color:var(--gold)}.cv-t{color:var(--teal-lt);margin-top:.2rem;white-space:pre}.cv-d{color:var(--muted)}
+.agv{flex:1;overflow:auto;padding:1.1rem;display:none}.agv.on{display:block}
+.agv-title{font-family:"EB Garamond",serif;font-size:1.3rem;font-weight:700;margin-bottom:.18rem}
+.agv-sub{font-size:.75rem;color:var(--muted);margin-bottom:1rem}
+.box-grid{display:flex;flex-wrap:wrap;gap:.5rem;align-items:flex-start}
+.bbox{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:.5rem .75rem;cursor:pointer;transition:all .15s;min-width:90px}
+.bbox:hover{border-color:var(--border2);transform:translateY(-1px)}.bbox.sel{border-color:var(--gold);background:rgba(201,168,76,.06)}
+.bbox.par{border-top:2px solid var(--teal);min-width:115px}.bbox.par.sel{border-top-color:var(--gold)}
+.bbox.nbox{border-top-color:var(--violet)}.bbox.abox{border-top-color:var(--amber)}
+.bl{font-size:.77rem;font-weight:500;color:var(--white)}.bc2{font-family:"JetBrains Mono",monospace;font-size:.55rem;color:var(--teal-lt);margin-top:.15rem}
+.bc2.vc{color:var(--violet-lt)}.bc2.ac{color:var(--amber-lt)}.bct{font-size:.65rem;color:var(--muted);margin-top:.1rem}
+.garr{color:var(--border2);font-size:.9rem;display:flex;align-items:center;align-self:center}
+.child-row{display:flex;flex-wrap:wrap;gap:.42rem;margin-top:.6rem;padding-top:.6rem;border-top:1px solid var(--border);width:100%}
+
+/* CHAT */
+.chat-view{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.msgs{flex:1;overflow-y:auto;padding:1.1rem;display:flex;flex-direction:column;gap:.85rem}
+.msgs::-webkit-scrollbar{width:2px}.msgs::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.msg{display:flex;gap:.6rem;align-items:flex-start;animation:mIn .22s ease}
+@keyframes mIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.ava{width:25px;height:25px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;flex-shrink:0;font-family:"EB Garamond",serif}
+.ava.sage{background:var(--gold-dim);color:var(--gold-soft)}.ava.user{background:var(--border2);color:var(--body)}
+.ava.npo{background:rgba(124,58,237,.3);color:var(--violet-lt)}.ava.biz{background:rgba(217,119,6,.3);color:var(--amber-lt)}
+.mcon{flex:1;padding-top:.07rem}
+.mname{font-family:"JetBrains Mono",monospace;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.22rem}
+.mtxt{font-size:.845rem;color:var(--body);line-height:1.7}.mtxt.u{color:var(--white)}
+.mcmd{font-family:"JetBrains Mono",monospace;font-size:.73rem;color:var(--teal-lt);background:rgba(13,148,136,.08);border:1px solid rgba(13,148,136,.2);border-radius:4px;padding:.07rem .32rem;display:inline-block}
+.mcmd.vc{color:var(--violet-lt);background:rgba(124,58,237,.08);border-color:rgba(124,58,237,.2)}
+.mcmd.ac{color:var(--amber-lt);background:rgba(217,119,6,.08);border-color:rgba(217,119,6,.2)}
+.mtree{font-family:"JetBrains Mono",monospace;font-size:.66rem;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:.6rem .85rem;margin-top:.42rem;color:var(--teal-lt);white-space:pre;overflow-x:auto}
+.etag{font-family:"JetBrains Mono",monospace;font-size:.55rem;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.32rem}
+
+/* SUGGESTIONS */
+.sugs{background:var(--card);border:1px solid var(--border2);border-radius:8px;overflow:hidden;margin:0 1.1rem .38rem;display:none}
+.sugs.on{display:block}
+.sug{display:flex;align-items:center;justify-content:space-between;padding:.42rem .85rem;cursor:pointer;transition:background .1s;font-size:.76rem}
+.sug:hover,.sug.hi{background:rgba(201,168,76,.08)}.sug:not(:last-child){border-bottom:1px solid var(--border)}
+.scmd{font-family:"JetBrains Mono",monospace;color:var(--teal-lt);font-size:.72rem}
+.scmd.vc{color:var(--violet-lt)}.scmd.ac{color:var(--amber-lt)}
+.sdesc{color:var(--muted);font-size:.7rem}
+.sbadge{font-family:"JetBrains Mono",monospace;font-size:.55rem;color:var(--gold);background:rgba(201,168,76,.1);border:1px solid var(--gold-dim);border-radius:3px;padding:.07rem .3rem}
+.sbadge.vc{color:var(--violet-lt);background:rgba(124,58,237,.1);border-color:rgba(124,58,237,.4)}
+.sbadge.ac{color:var(--amber-lt);background:rgba(217,119,6,.1);border-color:rgba(217,119,6,.4)}
+
+/* INPUT */
+.inp-wrap{padding:.6rem 1.1rem .8rem;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0}
+.inp-row{display:flex;gap:.42rem;align-items:flex-end}
+.ibox{flex:1;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:.57rem .85rem;font-family:"JetBrains Mono",monospace;font-size:.8rem;color:var(--teal-lt);resize:none;outline:none;min-height:37px;max-height:105px;transition:border-color .15s;line-height:1.5}
+.ibox::placeholder{color:var(--muted);font-family:"DM Sans",sans-serif;font-size:.76rem}
+.ibox:focus{border-color:var(--gold-dim)}
+.sbtn{width:37px;height:37px;border-radius:8px;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--bg);font-size:.9rem;transition:all .15s;flex-shrink:0}
+.sbtn:hover{background:var(--gold-soft)}.sbtn:disabled{background:var(--border);cursor:default;color:var(--muted)}
+.ihint{font-family:"JetBrains Mono",monospace;font-size:.55rem;color:var(--muted);margin-top:.32rem;letter-spacing:.05em}
+
+/* RIGHT PANEL */
+.rpanel{width:0;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;transition:width .2s ease}
+.rpanel.open{width:265px}
+.ph{padding:.6rem .85rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ptitle{font-family:"JetBrains Mono",monospace;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold)}
+.pclose{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.82rem;transition:color .15s}
+.pclose:hover{color:var(--white)}
+.pbody{flex:1;overflow-y:auto;padding:.55rem 0}
+.pbody::-webkit-scrollbar{width:2px}.pbody::-webkit-scrollbar-thumb{background:var(--border2)}
+.ditem{padding:.6rem .85rem;border-bottom:1px solid var(--border);cursor:pointer}
+.ditem:last-child{border-bottom:none}
+.dchk-row{display:flex;align-items:center;gap:.45rem;margin-bottom:.28rem}
+.dchk{width:14px;height:14px;border-radius:3px;border:1px solid var(--border2);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:.52rem;flex-shrink:0;transition:all .15s}
+.dchk.on{background:var(--teal);border-color:var(--teal);color:var(--bg)}.dchk.locked{background:var(--gold-dim);border-color:var(--gold-dim);color:var(--bg);cursor:default}
+.dnm{font-family:"JetBrains Mono",monospace;font-size:.68rem;color:var(--gold);letter-spacing:.08em}
+.dnm.vc{color:var(--violet-lt)}.dnm.ac{color:var(--amber-lt)}.dnm.rc{color:var(--rose-lt)}
+.ddesc{font-size:.7rem;color:var(--muted);line-height:1.5;padding-left:1.22rem}
+.srow{padding:.5rem .85rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);font-size:.76rem}
+.srow:last-child{border-bottom:none}.slbl{color:var(--body)}
+.tog{width:29px;height:16px;border-radius:9px;background:var(--border2);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.tog.on{background:var(--teal)}.tog::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--white);transition:transform .2s}.tog.on::after{transform:translateX(13px)}
+
+/* GLOW TRY-ME */
+.try-me{display:flex;align-items:center;gap:.45rem;margin:.7rem .85rem .35rem;padding:.5rem .85rem;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.4);border-radius:8px;cursor:pointer;animation:glow 2.2s ease-in-out infinite;transition:all .2s}
+.try-me:hover{background:rgba(124,58,237,.22);transform:scale(1.01)}
+@keyframes glow{0%,100%{box-shadow:0 0 8px rgba(124,58,237,.3),0 0 20px rgba(124,58,237,.1)}50%{box-shadow:0 0 18px rgba(124,58,237,.6),0 0 40px rgba(124,58,237,.25)}}
+.try-text{font-size:.72rem;font-weight:500;color:var(--violet-lt);line-height:1.38}
+.try-sub{font-size:.62rem;color:var(--muted)}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;align-items:center;justify-content:center}
+.modal-bg.on{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:12px;width:490px;max-width:95vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+.mh{padding:.9rem 1.1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.mh-title{font-family:"EB Garamond",serif;font-size:1.1rem;font-weight:700;color:var(--white)}
+.mh-x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;transition:color .15s}
+.mh-x:hover{color:var(--white)}
+.mb{flex:1;overflow-y:auto;padding:.9rem 1.1rem;display:flex;flex-direction:column;gap:.7rem}
+.fg{display:flex;flex-direction:column;gap:.28rem}
+.fl{font-family:"JetBrains Mono",monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-dim)}
+.fi{background:var(--card);border:1px solid var(--border2);border-radius:6px;padding:.47rem .7rem;font-family:"JetBrains Mono",monospace;font-size:.78rem;color:var(--teal-lt);outline:none;transition:border-color .15s;width:100%}
+.fi:focus{border-color:var(--gold-dim)}.fi::placeholder{color:var(--muted);font-family:"DM Sans",sans-serif}
+.tag-row{display:flex;flex-wrap:wrap;gap:.32rem;margin-top:.12rem}
+.tag{display:inline-flex;align-items:center;gap:.28rem;padding:.18rem .5rem;background:rgba(13,148,136,.12);border:1px solid rgba(13,148,136,.25);border-radius:4px;font-family:"JetBrains Mono",monospace;font-size:.62rem;color:var(--teal-lt)}
+.tag-x{cursor:pointer;color:var(--muted);font-size:.72rem;transition:color .12s}
+.tag-x:hover{color:var(--rose-lt)}
+.tag-add{display:flex;gap:.38rem}.tain{flex:1}
+.add-btn{padding:.38rem .7rem;background:var(--card);border:1px solid var(--border2);border-radius:6px;font-family:"JetBrains Mono",monospace;font-size:.68rem;color:var(--teal-lt);cursor:pointer;transition:all .15s;white-space:nowrap}
+.add-btn:hover{border-color:var(--teal);color:var(--white)}
+.mfoot{padding:.7rem 1.1rem;border-top:1px solid var(--border);display:flex;gap:.55rem;justify-content:flex-end}
+.btn-c{padding:.42rem .9rem;background:none;border:1px solid var(--border2);border-radius:6px;color:var(--muted);cursor:pointer;font-size:.76rem;transition:all .15s}
+.btn-c:hover{color:var(--white)}
+.btn-s{padding:.42rem 1.1rem;background:var(--violet);border:1px solid var(--violet);border-radius:6px;color:var(--white);cursor:pointer;font-size:.76rem;font-weight:500;transition:all .15s}
+.btn-s:hover{background:#6D28D9}
+
+/* EMPTY STATE */
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;color:var(--muted)}
+.elogo{font-family:"EB Garamond",serif;font-size:2.6rem;font-weight:700;letter-spacing:.1em;color:var(--border2);margin-bottom:.38rem}
+.ehint{font-size:.76rem;line-height:1.7;max-width:310px;margin-bottom:1rem}
+.chip{display:inline-block;margin:.18rem;padding:.25rem .65rem;background:var(--card);border:1px solid var(--border2);border-radius:20px;font-family:"JetBrains Mono",monospace;font-size:.62rem;color:var(--teal-lt);cursor:pointer;transition:all .15s}
+.chip:hover{border-color:var(--teal);color:var(--white)}
+.chip.vc{color:var(--violet-lt)}.chip.vc:hover{border-color:var(--violet)}
+.chip.ac{color:var(--amber-lt)}.chip.ac:hover{border-color:var(--amber)}
+.dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--gold);margin:0 2px;animation:dot 1.2s ease-in-out infinite}
+.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+@keyframes dot{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center">
+    <div class="logo">S<span>AGE</span></div>
+    <div class="logo-sub">STARDUST · Demo</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:.55rem">
+    <div class="vtog">
+      <button class="vbtn active" id="btn-chat" onclick="setView('chat')">Chat</button>
+      <button class="vbtn" id="btn-app" onclick="setView('app')">App</button>
+    </div>
+    <button class="ibtn" id="dict-btn" onclick="togglePanel('dict')" title="Dictionaries">📖</button>
+    <button class="ibtn" id="set-btn" onclick="togglePanel('settings')" title="Settings">⚙</button>
+  </div>
+</div>
+
+<div class="app-body">
+  <div class="sidebar">
+    <div class="sb-sec core">Core Domains</div>
+    <div class="tree-scroll" id="tree-list"></div>
+  </div>
+  <div class="main">
+    <div class="breadcrumb" id="breadcrumb"><span class="bc active" onclick="navTo('root')">~</span></div>
+    <div class="code-view" id="code-view">
+      <span class="cv-p">sage › </span><span id="cv-ctx" class="cv-t">root</span>
+      <div id="cv-tree" class="cv-d"></div>
+    </div>
+    <div class="agv" id="agv"></div>
+    <div class="chat-view" id="chat-view">
+      <div class="msgs" id="msgs">
+        <div class="empty" id="empty">
+          <div class="elogo">SAGE</div>
+          <div class="ehint">Type the shortest abbreviation of what you want. One output, always.</div>
+          <div>
+            <div class="chip" onclick="chip('prv diary wrt today I felt grateful and alive')">prv diary wrt</div>
+            <div class="chip" onclick="chip('prv lust new feeling I noticed someone today')">prv lust log</div>
+            <div class="chip" onclick="chip('prv drm last night I flew over a city made of light')">prv drm log</div>
+            <div class="chip" onclick="chip('pln goal new learn to code stardust in 60 days')">pln goal new</div>
+            <div class="chip" onclick="chip('soc frnd add maya shared love of jazz and design')">soc frnd add</div>
+            <div class="chip vc" onclick="chip('lkr chk prsnr anderson')">lkr chk in</div>
+            <div class="chip vc" onclick="chip('lkr asgn new prsnr needs locker 1 available')">lkr asgn</div>
+            <div class="chip vc" onclick="chip('lkr rnw list show who needs to renew by 15th')">lkr rnw list</div>
+            <div class="chip ac" onclick="chip('idx idea new cities should pay residents for civic audit work')">idx idea new</div>
+            <div class="chip ac" onclick="chip('idx collab req invite designers to civic bounty UI project')">idx collab</div>
+            <div class="chip ac" onclick="chip('idx disc top ideas this week')">idx disc top</div>
+          </div>
+        </div>
+      </div>
+      <div class="sugs" id="sugs"></div>
+      <div class="inp-wrap">
+        <div class="inp-row">
+          <textarea class="ibox" id="ibox" placeholder="type shortest abbreviation · voice + text simultaneous" rows="1"
+            onkeydown="handleKey(event)" oninput="handleInput(this)"></textarea>
+          <button class="sbtn" id="sbtn" onclick="send()" disabled>➤</button>
+        </div>
+        <div class="ihint">enter to send · tab to select · esc to clear</div>
+      </div>
+    </div>
+  </div>
+  <div class="rpanel" id="rpanel">
+    <div class="ph">
+      <div class="ptitle" id="ptitle">Dictionaries</div>
+      <button class="pclose" onclick="closePanel()">✕</button>
+    </div>
+    <div class="pbody" id="pbody"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <div class="mh">
+      <div class="mh-title">✨ Build Your Dictionary</div>
+      <button class="mh-x" onclick="closeModal()">✕</button>
+    </div>
+    <div class="mb">
+      <div class="fg"><div class="fl">Dictionary Name</div><input class="fi" id="d-name" placeholder="e.g. MyCity.txt"></div>
+      <div class="fg"><div class="fl">Description</div><input class="fi" id="d-desc" placeholder="What does this dictionary do?"></div>
+      <div class="fg"><div class="fl">Domain Focus</div>
+        <select class="fi" id="d-domain">
+          <option value="general">General / Personal</option>
+          <option value="civic">Civic / Community</option>
+          <option value="business">Business / Commerce</option>
+          <option value="creative">Creative / Arts</option>
+          <option value="health">Health / Wellness</option>
+        </select>
+      </div>
+      <div class="fg">
+        <div class="fl">Custom Shortcuts</div>
+        <div class="tag-row" id="alias-tags"></div>
+        <div class="tag-add"><input class="fi tain" id="alias-in" placeholder="e.g. morn → prv diary wrt morning"><button class="add-btn" onclick="addAlias()">+ Add</button></div>
+      </div>
+      <div class="fg">
+        <div class="fl">Value Weights</div>
+        <div class="tag-row" id="val-tags"></div>
+        <div class="tag-add"><input class="fi tain" id="val-in" placeholder="e.g. privacy, community, creativity"><button class="add-btn" onclick="addVal()">+ Add</button></div>
+      </div>
+      <div class="fg"><div class="fl">Tone Style</div>
+        <select class="fi" id="d-tone">
+          <option value="warm">Warm &amp; Direct</option>
+          <option value="blunt">Blunt &amp; Efficient</option>
+          <option value="poetic">Poetic &amp; Reflective</option>
+          <option value="technical">Technical &amp; Precise</option>
+          <option value="playful">Playful &amp; Creative</option>
+        </select>
+      </div>
+      <div style="font-size:.72rem;color:var(--muted);line-height:1.6;padding:.45rem .7rem;background:var(--card);border-radius:6px;border:1px solid var(--border)">
+        💡 Your dictionary activates immediately. In the full release, publish it and earn 92% of every sale.
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn-c" onclick="closeModal()">Cancel</button>
+      <button class="btn-s" onclick="saveDict()">Activate Dictionary ✶</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var ST = {
+  view: "chat", node: "root", panel: null, hi: -1,
+  dicts: { core: true, lockers: true, ideaindex: true, urbanwolf: false, outlaw: false },
+  settings: { voice: true, sugs: true, codeView: true, chain: true },
+  entries: {}, customDicts: [], aliases: [], vals: []
+};
+
+var TREE = {
+  root: { label:"Sage", icon:"✶", cmd:"~", children:["prv","hm","soc","pln","knw","lkr","idx"], type:"core" },
+  prv: { label:"Private", icon:"🔐", cmd:"prv", parent:"root", type:"core", children:["prv_diary","prv_lust","prv_drm","prv_trma","prv_rage","prv_blf","prv_lgcy"] },
+  prv_diary: { label:"Diary", icon:"📓", cmd:"prv diary", parent:"prv", type:"core", children:[] },
+  prv_lust: { label:"Lust", icon:"🔥", cmd:"prv lust", parent:"prv", type:"core", children:[] },
+  prv_drm: { label:"Dreams", icon:"🌙", cmd:"prv drm", parent:"prv", type:"core", children:[] },
+  prv_trma: { label:"Trauma", icon:"🩹", cmd:"prv trma", parent:"prv", type:"core", children:[] },
+  prv_rage: { label:"Rage", icon:"⚡", cmd:"prv rage", parent:"prv", type:"core", children:[] },
+  prv_blf: { label:"Beliefs", icon:"🕊", cmd:"prv blf", parent:"prv", type:"core", children:[] },
+  prv_lgcy: { label:"Legacy", icon:"📜", cmd:"prv lgcy", parent:"prv", type:"core", children:[] },
+  hm: { label:"Home", icon:"🏠", cmd:"hm", parent:"root", type:"core", children:["hm_util","hm_rsrc","hm_mnt","hm_sec","hm_fin"] },
+  hm_util: { label:"Utilities", icon:"⚡", cmd:"hm util", parent:"hm", type:"core", children:[] },
+  hm_rsrc: { label:"Resources", icon:"📦", cmd:"hm rsrc", parent:"hm", type:"core", children:[] },
+  hm_mnt: { label:"Maintenance", icon:"🔧", cmd:"hm mnt", parent:"hm", type:"core", children:[] },
+  hm_sec: { label:"Security", icon:"🔒", cmd:"hm sec", parent:"hm", type:"core", children:[] },
+  hm_fin: { label:"Finance", icon:"💰", cmd:"hm fin", parent:"hm", type:"core", children:[] },
+  soc: { label:"Social", icon:"👥", cmd:"soc", parent:"root", type:"core", children:["soc_frnd","soc_dat","soc_sup","soc_skl"] },
+  soc_frnd: { label:"Friends", icon:"🤝", cmd:"soc frnd", parent:"soc", type:"core", children:[] },
+  soc_dat: { label:"Connections", icon:"💫", cmd:"soc dat", parent:"soc", type:"core", children:[] },
+  soc_sup: { label:"Support", icon:"🫂", cmd:"soc sup", parent:"soc", type:"core", children:[] },
+  soc_skl: { label:"Skills", icon:"🔄", cmd:"soc skl", parent:"soc", type:"core", children:[] },
+  pln: { label:"Planning", icon:"📅", cmd:"pln", parent:"root", type:"core", children:["pln_goal","pln_evnt","pln_place","pln_trvl","pln_idea","pln_mlstn"] },
+  pln_goal: { label:"Goals", icon:"🎯", cmd:"pln goal", parent:"pln", type:"core", children:[] },
+  pln_evnt: { label:"Events", icon:"📆", cmd:"pln evnt", parent:"pln", type:"core", children:[] },
+  pln_place: { label:"Places", icon:"📍", cmd:"pln place", parent:"pln", type:"core", children:[] },
+  pln_trvl: { label:"Travel", icon:"✈", cmd:"pln trvl", parent:"pln", type:"core", children:[] },
+  pln_idea: { label:"Ideas", icon:"💡", cmd:"pln idea", parent:"pln", type:"core", children:[] },
+  pln_mlstn: { label:"Milestones", icon:"🏆", cmd:"pln mlstn", parent:"pln", type:"core", children:[] },
+  knw: { label:"Knowledge", icon:"🧠", cmd:"knw", parent:"root", type:"core", children:["knw_cap","knw_res","knw_lgcy"] },
+  knw_cap: { label:"Capture", icon:"📸", cmd:"knw cap", parent:"knw", type:"core", children:[] },
+  knw_res: { label:"Research", icon:"🔍", cmd:"knw res", parent:"knw", type:"core", children:[] },
+  knw_lgcy: { label:"Legacy Vault", icon:"🏛", cmd:"knw lgcy", parent:"knw", type:"core", children:[] },
+  lkr: { label:"Lockers", icon:"🗄", cmd:"lkr", parent:"root", type:"npo", children:["lkr_chk","lkr_asgn","lkr_bar","lkr_rnw","lkr_rpt","lkr_prsnr","lkr_inv"] },
+  lkr_chk: { label:"Check In", icon:"✅", cmd:"lkr chk", parent:"lkr", type:"npo", children:[] },
+  lkr_asgn: { label:"Assign", icon:"🔑", cmd:"lkr asgn", parent:"lkr", type:"npo", children:[] },
+  lkr_bar: { label:"Bar / Unbar", icon:"🚫", cmd:"lkr bar", parent:"lkr", type:"npo", children:[] },
+  lkr_rnw: { label:"Renewals", icon:"📅", cmd:"lkr rnw", parent:"lkr", type:"npo", children:[] },
+  lkr_rpt: { label:"Reports", icon:"📊", cmd:"lkr rpt", parent:"lkr", type:"npo", children:[] },
+  lkr_prsnr: { label:"Participants", icon:"👤", cmd:"lkr prsnr", parent:"lkr", type:"npo", children:[] },
+  lkr_inv: { label:"Inventory", icon:"🗃", cmd:"lkr inv", parent:"lkr", type:"npo", children:[] },
+  idx: { label:"IdeaIndex", icon:"💡", cmd:"idx", parent:"root", type:"biz", children:["idx_idea","idx_disc","idx_collab","idx_vote","idx_prj","idx_pub","idx_feed"] },
+  idx_idea: { label:"New Idea", icon:"✨", cmd:"idx idea", parent:"idx", type:"biz", children:[] },
+  idx_disc: { label:"Discover", icon:"🔭", cmd:"idx disc", parent:"idx", type:"biz", children:[] },
+  idx_collab: { label:"Collaborate", icon:"🤝", cmd:"idx collab", parent:"idx", type:"biz", children:[] },
+  idx_vote: { label:"Vote / Rank", icon:"⬆", cmd:"idx vote", parent:"idx", type:"biz", children:[] },
+  idx_prj: { label:"Project Board", icon:"📋", cmd:"idx prj", parent:"idx", type:"biz", children:[] },
+  idx_pub: { label:"Publish", icon:"📡", cmd:"idx pub", parent:"idx", type:"biz", children:[] },
+  idx_feed: { label:"My Feed", icon:"📰", cmd:"idx feed", parent:"idx", type:"biz", children:[] }
+};
+
+var SUGS = [
+  { cmd:"prv diary wrt", desc:"Write a diary entry", node:"prv_diary", badge:"prv", cls:"" },
+  { cmd:"prv lust log", desc:"Log a private feeling", node:"prv_lust", badge:"prv", cls:"" },
+  { cmd:"prv drm log", desc:"Record a dream", node:"prv_drm", badge:"prv", cls:"" },
+  { cmd:"prv rage vent", desc:"Release into the vault", node:"prv_rage", badge:"prv", cls:"" },
+  { cmd:"pln goal new", desc:"Create a new goal", node:"pln_goal", badge:"pln", cls:"" },
+  { cmd:"pln evnt add", desc:"Add an event", node:"pln_evnt", badge:"pln", cls:"" },
+  { cmd:"pln idea cap", desc:"Capture an idea", node:"pln_idea", badge:"pln", cls:"" },
+  { cmd:"soc frnd add", desc:"Add a friend profile", node:"soc_frnd", badge:"soc", cls:"" },
+  { cmd:"hm util track", desc:"Track a utility", node:"hm_util", badge:"hm", cls:"" },
+  { cmd:"lkr chk prsnr", desc:"Check in participant", node:"lkr_chk", badge:"lkr", cls:"vc" },
+  { cmd:"lkr asgn new", desc:"Assign available locker", node:"lkr_asgn", badge:"lkr", cls:"vc" },
+  { cmd:"lkr bar ec", desc:"Issue EC bar (30 days)", node:"lkr_bar", badge:"lkr", cls:"vc" },
+  { cmd:"lkr rnw list", desc:"View renewal due list", node:"lkr_rnw", badge:"lkr", cls:"vc" },
+  { cmd:"lkr rpt daily", desc:"Daily report", node:"lkr_rpt", badge:"lkr", cls:"vc" },
+  { cmd:"lkr prsnr find", desc:"Find participant", node:"lkr_prsnr", badge:"lkr", cls:"vc" },
+  { cmd:"lkr inv status", desc:"Check inventory", node:"lkr_inv", badge:"lkr", cls:"vc" },
+  { cmd:"idx idea new", desc:"Post a new idea", node:"idx_idea", badge:"idx", cls:"ac" },
+  { cmd:"idx disc top", desc:"Discover top ideas", node:"idx_disc", badge:"idx", cls:"ac" },
+  { cmd:"idx collab req", desc:"Request collaboration", node:"idx_collab", badge:"idx", cls:"ac" },
+  { cmd:"idx vote up", desc:"Upvote an idea", node:"idx_vote", badge:"idx", cls:"ac" },
+  { cmd:"idx prj new", desc:"Start project board", node:"idx_prj", badge:"idx", cls:"ac" },
+  { cmd:"idx pub idea", desc:"Publish idea publicly", node:"idx_pub", badge:"idx", cls:"ac" },
+  { cmd:"idx feed my", desc:"View my idea feed", node:"idx_feed", badge:"idx", cls:"ac" }
+];
+
+function sysP() {
+  var ad = Object.keys(ST.dicts).filter(function(k){ return ST.dicts[k]; }).join(", ");
+  var cd = ST.customDicts.map(function(d){ return d.name + "(domain:" + d.domain + ",tone:" + d.tone + ",values:" + d.vals.join(",") + ")"; }).join("; ");
+  var al = ST.customDicts.reduce(function(acc,d){ return acc.concat(d.aliases); }, []).join("; ");
+  return "You are SAGE, the AI engine built on the STARDUST protocol.
+
+ACTIVE DICTIONARIES: " + ad + (cd ? "
+CUSTOM: " + cd : "") + (al ? "
+USER ALIASES: " + al : "") + "
+CONTEXT: " + ST.node + " | DATE: " + new Date().toLocaleDateString("en-US", { weekday:"long", year:"numeric", month:"long", day:"numeric" }) + "
+
+STARDUST DOMAINS:
+1. CORE (prv/hm/soc/pln/knw) - personal life. Private domain: absolute zero-judgment, mind cannot be a prison, confirm encryption.
+2. LOCKERS (lkr.*) - NONPROFIT locker management for unhoused participants. Rules: 1-3 lockers/participant, 1 work-date/locker/month, 1 meeting/month, 1 power-lunch/year. EC bar=30days auto-expire. Renewal deadline=15th. Verbs: chk(check-in), asgn(assign), bar(bar/unbar), rnw(renewals), rpt(report), prsnr(participant lookup), inv(inventory). Respond as if you ARE the live system.
+3. IDEAINDEX (idx.*) - community idea platform. Ideas rise above parent comments if more upvotes. Verbs: idea(post), disc(discover), collab(collaborate), vote(rank), prj(project board), pub(publish), feed(my feed).
+
+RULES: Parse STARDUST abbreviations. Accept natural language, convert internally. ONE output always. If ambiguous ask one question max 3 options. Show AET for chains: VERB(node)->VERB(node)->RESULT. Keep responses 2-5 sentences unless log/report. Format entries with [TAG - node - encrypted/status].";
+}
+
+var hist = [];
+function callSage(msg) {
+  hist.push({ role: "user", content: msg });
+  return fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 900,
+      system: sysP(),
+      messages: hist
+    })
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    var t = (d.content && d.content[0] && d.content[0].text) ? d.content[0].text : "Error.";
+    hist.push({ role: "assistant", content: t });
+    return t;
+  });
+}
+
+function renderTree() {
+  var el = document.getElementById("tree-list");
+  var h = "";
+  h += mkNode("root", "✶", "Sage", "~", "", "core");
+  ["prv","hm","soc","pln","knw"].forEach(function(k) {
+    var n = TREE[k];
+    var open = ST.node === k || ST.node.indexOf(k + "_") === 0;
+    h += mkNode(k, n.icon, n.label, n.cmd, "child", "core");
+    if (open) { n.children.forEach(function(c) { var cn = TREE[c]; h += mkNode(c, cn.icon, cn.label, cn.cmd, "grand", "core"); }); }
+  });
+  h += '<div class="sb-sec npo" style="margin-top:.2rem">Non-Profit · Lockers</div>';
+  var lk = TREE.lkr; var lop = ST.node === "lkr" || ST.node.indexOf("lkr_") === 0;
+  h += mkNode("lkr", lk.icon, lk.label, lk.cmd, "child npo-n", "npo");
+  if (lop) { lk.children.forEach(function(c) { var cn = TREE[c]; h += mkNode(c, cn.icon, cn.label, cn.cmd, "grand npo-n", "npo"); }); }
+  h += '<div class="sb-sec biz" style="margin-top:.2rem">Business · IdeaIndex</div>';
+  var ix = TREE.idx; var iop = ST.node === "idx" || ST.node.indexOf("idx_") === 0;
+  h += mkNode("idx", ix.icon, ix.label, ix.cmd, "child biz-n", "biz");
+  if (iop) { ix.children.forEach(function(c) { var cn = TREE[c]; h += mkNode(c, cn.icon, cn.label, cn.cmd, "grand biz-n", "biz"); }); }
+  el.innerHTML = h;
+}
+
+function mkNode(key, icon, label, cmd, cls, type) {
+  var ac = ST.node === key ? "active" : "";
+  var nc = type === "npo" ? "vc" : type === "biz" ? "ac" : "tc";
+  return '<div class="tnode ' + cls + ' ' + ac + '" onclick="navTo('' + key + '')">' + icon + ' ' + label + '<span class="ncmd ' + nc + '">' + cmd + '</span></div>';
+}
+
+function renderBC() {
+  var cr = [{ key:"root", label:"~" }]; var cur = ST.node;
+  while (cur && cur !== "root") { var p = TREE[cur]; if (p) { cr.splice(1,0,{ key:cur, label:p.label }); cur = p.parent; } else break; }
+  var seen = {}; var u = cr.filter(function(c) { if (seen[c.key]) return false; seen[c.key] = true; return true; });
+  document.getElementById("breadcrumb").innerHTML = u.map(function(c,i) {
+    return '<span class="bc' + (i===u.length-1?" active":"") + '" onclick="navTo('' + c.key + '')">' + c.label + "</span>";
+  }).join('<span class="bc-arr"> › </span>');
+}
+
+function renderCV() {
+  var cv = document.getElementById("code-view");
+  if (!ST.settings.codeView || ST.view !== "chat") { cv.classList.remove("on"); return; }
+  cv.classList.add("on");
+  var n = TREE[ST.node];
+  document.getElementById("cv-ctx").textContent = n.cmd;
+  var t = "";
+  if (n.children && n.children.length) { t = n.children.map(function(k){ return "  ├─ " + TREE[k].cmd.padEnd(16) + " " + TREE[k].label; }).join("
+"); }
+  else if (n.parent) { t = "  parent: " + TREE[n.parent].cmd + "
+  scope: leaf · encrypted"; }
+  document.getElementById("cv-tree").textContent = t;
+}
+
+function renderAGV() {
+  var el = document.getElementById("agv");
+  var n = TREE[ST.node];
+  if (ST.node === "root") {
+    var h = '<div class="agv-title">Sage · STARDUST Demo</div><div class="agv-sub">All domain trees</div><div class="box-grid">';
+    Object.keys(TREE).filter(function(k){ return TREE[k].parent === "root"; }).forEach(function(k) {
+      var nd = TREE[k]; var ac = nd.type==="npo"?"nbox":nd.type==="biz"?"abox":""; var cc = nd.type==="npo"?"vc":nd.type==="biz"?"ac":"";
+      h += '<div class="bbox par ' + ac + '" onclick="navTo('' + k + '')">' +
+           '<div class="bl">' + nd.icon + " " + nd.label + "</div>" +
+           '<div class="bc2 ' + cc + '">' + nd.cmd + "</div>" +
+           '<div class="bct">' + nd.children.length + " nodes</div></div>";
+    });
+    el.innerHTML = h + "</div>";
+  } else {
+    var dk = n.parent === "root" ? ST.node : n.parent; var dm = TREE[dk];
+    var dt = dm.type || "core"; var dac = dt==="npo"?"nbox":dt==="biz"?"abox":""; var dcc = dt==="npo"?"vc":dt==="biz"?"ac":"";
+    var h = '<div class="agv-title">' + dm.icon + " " + dm.label + '</div>' +
+            '<div class="agv-sub" style="font-family:JetBrains Mono,monospace;font-size:.68rem;color:var(--teal-lt)">' + dm.cmd + '</div>' +
+            '<div class="box-grid" style="margin-top:.7rem">' +
+            '<div class="bbox par ' + dac + ' sel" onclick="navTo('' + dk + '')">' +
+            '<div class="bl">' + dm.icon + " " + dm.label + "</div>" +
+            '<div class="bc2 ' + dcc + '">' + dm.cmd + "</div></div>" +
+            '<div class="garr">›</div>';
+    dm.children.forEach(function(k) {
+      var cn = TREE[k]; var ct = cn.type||"core"; var cac = ct==="npo"?"nbox":ct==="biz"?"abox":""; var ccc = ct==="npo"?"vc":ct==="biz"?"ac":"";
+      h += '<div class="bbox ' + cac + (ST.node===k?" sel":"") + '" onclick="navTo('' + k + '')">' +
+           '<div class="bl">' + cn.icon + " " + cn.label + "</div>" +
+           '<div class="bc2 ' + ccc + '">' + cn.cmd + "</div></div>";
+    });
+    h += "</div>";
+    var ents = ST.entries[ST.node] || [];
+    if (ents.length) {
+      h += '<div class="child-row">';
+      ents.forEach(function(e) { h += '<div class="bbox" style="min-width:170px;max-width:270px"><div class="bc2">' + e.ts + '</div><div class="bl" style="font-size:.74rem;font-weight:400;color:var(--body);margin-top:.18rem">' + e.prev + "</div></div>"; });
+      h += "</div>";
+    }
+    el.innerHTML = h;
+  }
+}
+
+function navTo(k) { ST.node = k; renderTree(); renderBC(); renderCV(); if (ST.view==="app") renderAGV(); }
+
+function setView(v) {
+  ST.view = v;
+  document.getElementById("btn-chat").classList.toggle("active", v==="chat");
+  document.getElementById("btn-app").classList.toggle("active", v==="app");
+  document.getElementById("chat-view").style.display = v==="chat" ? "flex" : "none";
+  document.getElementById("agv").classList.toggle("on", v==="app");
+  renderCV(); if (v==="app") renderAGV();
+}
+
+function togglePanel(w) {
+  if (ST.panel === w) { closePanel(); return; }
+  ST.panel = w;
+  document.getElementById("rpanel").classList.add("open");
+  document.getElementById("ptitle").textContent = w==="dict" ? "Dictionaries" : "Settings";
+  renderPanel(w);
+  document.getElementById("dict-btn").classList.toggle("active", w==="dict");
+  document.getElementById("set-btn").classList.toggle("active", w==="settings");
+}
+function closePanel() {
+  ST.panel = null;
+  document.getElementById("rpanel").classList.remove("open");
+  document.getElementById("dict-btn").classList.remove("active");
+  document.getElementById("set-btn").classList.remove("active");
+}
+
+function renderPanel(w) {
+  var body = document.getElementById("pbody");
+  if (w === "dict") {
+    var dicts = [
+      { key:"core", name:"CORE.txt", desc:"Default baseline. Human nature, instincts.", cls:"", locked:true },
+      { key:"lockers", name:"LOCKERS.txt", desc:"Nonprofit locker mgmt. Participants, check-in, renewals, bars.", cls:"vc" },
+      { key:"ideaindex", name:"IDEAINDEX.txt", desc:"Community idea platform. Post, discover, collaborate, rank.", cls:"ac" },
+      { key:"urbanwolf", name:"URBANWOLF.txt", desc:"Urban infrastructure lens. Civic-first, community-coded.", cls:"" },
+      { key:"outlaw", name:"THEOUTLAW.txt", desc:"Radical privacy. Zero-trust. Encrypts all output.", cls:"" }
+    ];
+    var h = dicts.map(function(d) {
+      var onclick = d.locked ? "" : 'onclick="toggleDict('' + d.key + '')"';
+      var chkCls = d.locked ? "locked" : (ST.dicts[d.key] ? "on" : "");
+      var chkContent = (d.locked || ST.dicts[d.key]) ? "✓" : "";
+      return '<div class="ditem" ' + onclick + '>' +
+             '<div class="dchk-row"><div class="dchk ' + chkCls + '">' + chkContent + '</div>' +
+             '<div class="dnm ' + d.cls + '">' + d.name + '</div></div>' +
+             '<div class="ddesc">' + d.desc + '</div></div>';
+    }).join("");
+    if (ST.customDicts.length) {
+      h += '<div style="padding:.45rem .85rem .2rem;font-family:JetBrains Mono,monospace;font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--violet-lt);border-top:1px solid var(--border)">Your Dictionaries</div>';
+      ST.customDicts.forEach(function(d) {
+        h += '<div class="ditem"><div class="dchk-row"><div class="dchk on">✓</div><div class="dnm rc">' + d.name + '</div></div><div class="ddesc">' + d.desc + " · " + d.domain + " · " + d.tone + '</div></div>';
+      });
+    }
+    h += '<div class="try-me" onclick="openModal()"><div style="font-size:.95rem">✨</div><div><div class="try-text">Try me out! Build your own dictionary</div><div class="try-sub">Create your language · 60 seconds</div></div></div>';
+    body.innerHTML = h;
+  } else {
+    var sets = [
+      { key:"voice", label:"Voice input (mic on)" },
+      { key:"sugs", label:"Live suggestions" },
+      { key:"codeView", label:"STARDUST code view" },
+      { key:"chain", label:"Auto-chain suggestions" }
+    ];
+    body.innerHTML = sets.map(function(s) {
+      return '<div class="srow"><span class="slbl">' + s.label + '</span>' +
+             '<button class="tog ' + (ST.settings[s.key]?"on":"") + '" onclick="toggleSetting('' + s.key + '')"></button></div>';
+    }).join("");
+  }
+}
+
+function toggleDict(k) {
+  ST.dicts[k] = !ST.dicts[k]; renderPanel("dict");
+  addMsg("sage", 'Dictionary ' + (ST.dicts[k]?"activated":"deactivated") + ': <span class="mcmd">' + k + '.txt</span>. Context reloaded.');
+}
+function toggleSetting(k) { ST.settings[k] = !ST.settings[k]; renderPanel("settings"); if (k==="codeView") renderCV(); }
+
+function openModal() { document.getElementById("modal-bg").classList.add("on"); }
+function closeModal() { document.getElementById("modal-bg").classList.remove("on"); }
+document.getElementById("modal-bg").addEventListener("click", function(e){ if(e.target===this) closeModal(); });
+
+ST.aliases = []; ST.vals = [];
+function addAlias() { var i = document.getElementById("alias-in"); if(!i.value.trim())return; ST.aliases.push(i.value.trim()); i.value=""; renderTags("alias-tags",ST.aliases,"alias"); }
+function addVal() { var i = document.getElementById("val-in"); if(!i.value.trim())return; ST.vals.push(i.value.trim()); i.value=""; renderTags("val-tags",ST.vals,"val"); }
+function renderTags(id,arr,t) { document.getElementById(id).innerHTML = arr.map(function(v,i){ return '<span class="tag">' + v + '<span class="tag-x" onclick="removeTag('' + t + '',' + i + ')">✕</span></span>'; }).join(""); }
+function removeTag(t,i) { if(t==="alias")ST.aliases.splice(i,1);else ST.vals.splice(i,1); renderTags(t==="alias"?"alias-tags":"val-tags",t==="alias"?ST.aliases:ST.vals,t); }
+
+function saveDict() {
+  var n = document.getElementById("d-name").value.trim() || "Custom.txt";
+  var d = {
+    name: n.endsWith(".txt") ? n : n+".txt",
+    desc: document.getElementById("d-desc").value.trim() || "Custom dictionary",
+    domain: document.getElementById("d-domain").value,
+    tone: document.getElementById("d-tone").value,
+    aliases: ST.aliases.slice(), vals: ST.vals.slice()
+  };
+  ST.customDicts.push(d); ST.aliases=[]; ST.vals=[];
+  ["d-name","d-desc"].forEach(function(id){ document.getElementById(id).value=""; });
+  ["alias-tags","val-tags"].forEach(function(id){ document.getElementById(id).innerHTML=""; });
+  closeModal(); renderPanel("dict");
+  addMsg("sage", 'Your dictionary <span class="mcmd vc">' + d.name + '</span> is now active. Values: <em>' + (d.vals.join(", ")||"open") + '</em>. Tone: ' + d.tone + '. In the full release, publish it and earn 92% of every sale. ✶');
+}
+
+function addMsg(role, html) {
+  var empty = document.getElementById("empty"); if (empty) empty.remove();
+  var c = document.getElementById("msgs");
+  var div = document.createElement("div"); div.className = "msg";
+  var avc = role==="npo"?"npo":role==="biz"?"biz":role==="user"?"user":"sage";
+  var avl = role==="npo"?"L":role==="biz"?"I":role==="user"?"U":"S";
+  var nm = role==="npo"?"Lockers · NPO":role==="biz"?"IdeaIndex · Biz":role==="user"?"You":"Sage · STARDUST";
+  div.innerHTML = '<div class="ava ' + avc + '">' + avl + '</div><div class="mcon"><div class="mname">' + nm + '</div><div class="mtxt' + (role==="user"?" u":"") + '">' + html + '</div></div>';
+  c.appendChild(div); c.scrollTop = c.scrollHeight; return div;
+}
+function addLoading() {
+  var c = document.getElementById("msgs");
+  var div = document.createElement("div"); div.className="msg"; div.id="ldg";
+  div.innerHTML = '<div class="ava sage">S</div><div class="mcon"><div class="mname">Sage · STARDUST</div><div class="mtxt"><div class="dots"><span></span><span></span><span></span></div></div></div>';
+  c.appendChild(div); c.scrollTop = c.scrollHeight;
+}
+function removeLoading() { var e = document.getElementById("ldg"); if(e) e.remove(); }
+
+function fmtReply(txt) {
+  return txt
+    .replace(/\[([A-Z ·.\-_]+)\]/g, '<div class="etag">$1</div>')
+    .replace(/```([\s\S]*?)```/g, '<div class="mtree">$1</div>')
+    .replace(/`([^`]+)`/g, '<span class="mcmd">$1</span>')
+    .replace(/
+/g, "<br>");
+}
+function detRole(cmd) { var c=cmd.toLowerCase(); if(c.indexOf("lkr")===0)return"npo"; if(c.indexOf("idx")===0)return"biz"; return"sage"; }
+
+function send() {
+  var box = document.getElementById("ibox");
+  var val = box.value.trim(); if(!val) return;
+  hideSugs(); box.value=""; box.style.height="auto"; document.getElementById("sbtn").disabled=true;
+  var cc = val.toLowerCase().indexOf("lkr")===0?"vc":val.toLowerCase().indexOf("idx")===0?"ac":"";
+  addMsg("user", '<span class="mcmd ' + cc + '">' + esc(val) + '</span>');
+  autoNav(val); addLoading();
+  callSage(val).then(function(rep){ removeLoading(); addMsg(detRole(val),fmtReply(rep)); storeEnt(val); if(ST.view==="app")renderAGV(); })
+  .catch(function(){ removeLoading(); addMsg("sage","Connection error. Check network."); });
+}
+
+var navMap = [
+  ["prv diary","prv_diary"],["prv lust","prv_lust"],["prv drm","prv_drm"],["prv trma","prv_trma"],
+  ["prv rage","prv_rage"],["prv blf","prv_blf"],["prv lgcy","prv_lgcy"],["prv ","prv"],
+  ["hm util","hm_util"],["hm rsrc","hm_rsrc"],["hm mnt","hm_mnt"],["hm fin","hm_fin"],["hm ","hm"],
+  ["soc frnd","soc_frnd"],["soc dat","soc_dat"],["soc ","soc"],
+  ["pln goal","pln_goal"],["pln evnt","pln_evnt"],["pln place","pln_place"],
+  ["pln idea","pln_idea"],["pln trvl","pln_trvl"],["pln mlstn","pln_mlstn"],["pln ","pln"],["knw ","knw"],
+  ["lkr chk","lkr_chk"],["lkr asgn","lkr_asgn"],["lkr bar","lkr_bar"],["lkr rnw","lkr_rnw"],
+  ["lkr rpt","lkr_rpt"],["lkr prsnr","lkr_prsnr"],["lkr inv","lkr_inv"],["lkr ","lkr"],
+  ["idx idea","idx_idea"],["idx disc","idx_disc"],["idx collab","idx_collab"],["idx vote","idx_vote"],
+  ["idx prj","idx_prj"],["idx pub","idx_pub"],["idx feed","idx_feed"],["idx ","idx"]
+];
+function autoNav(cmd) {
+  var c = cmd.toLowerCase();
+  for(var i=0;i<navMap.length;i++){ if(c.indexOf(navMap[i][0])===0){ navTo(navMap[i][1]); return; } }
+}
+
+var entMap = [
+  ["prv diary","prv_diary"],["prv lust","prv_lust"],["prv drm","prv_drm"],
+  ["pln goal","pln_goal"],["pln evnt","pln_evnt"],["hm util","hm_util"],
+  ["soc frnd","soc_frnd"],["lkr chk","lkr_chk"],["lkr asgn","lkr_asgn"],
+  ["idx idea","idx_idea"],["idx collab","idx_collab"]
+];
+function storeEnt(cmd) {
+  var c = cmd.toLowerCase();
+  for(var i=0;i<entMap.length;i++){
+    if(c.indexOf(entMap[i][0])===0){
+      var k=entMap[i][1]; if(!ST.entries[k])ST.entries[k]=[];
+      var w=cmd.split(" ").slice(2).join(" ");
+      ST.entries[k].unshift({ts:new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"}),prev:w.slice(0,52)+(w.length>52?"…":"")});
+      return;
+    }
+  }
+}
+
+function updateSugs(val) {
+  if (!ST.settings.sugs || !val.trim()) { hideSugs(); return; }
+  var q = val.toLowerCase().trim();
+  var m = SUGS.filter(function(s){
+    return s.cmd.indexOf(q)>=0 || s.desc.toLowerCase().indexOf(q)>=0 || q.split(" ").every(function(w){ return s.cmd.indexOf(w)>=0; });
+  }).slice(0,6);
+  if (!m.length) { hideSugs(); return; }
+  var el = document.getElementById("sugs");
+  el.innerHTML = m.map(function(s,i){
+    return '<div class="sug" onclick="selSug('' + s.cmd + '')" data-idx="' + i + '">' +
+           '<span class="scmd ' + s.cls + '">' + s.cmd + '</span>' +
+           '<span class="sdesc">' + s.desc + '</span>' +
+           '<span class="sbadge ' + s.cls + '">' + s.badge + '</span></div>';
+  }).join("");
+  el.classList.add("on"); ST.hi = -1;
+}
+function hideSugs() { document.getElementById("sugs").classList.remove("on"); ST.hi=-1; }
+function selSug(cmd) { var b=document.getElementById("ibox"); b.value=cmd+" "; b.focus(); hideSugs(); document.getElementById("sbtn").disabled=false; }
+
+function handleInput(el) {
+  el.style.height = "auto";
+  el.style.height = Math.min(el.scrollHeight, 105) + "px";
+  document.getElementById("sbtn").disabled = !el.value.trim();
+  updateSugs(el.value);
+}
+
+function handleKey(e) {
+  var sugs = document.getElementById("sugs");
+  var items = sugs.querySelectorAll(".sug");
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    if (ST.hi >= 0 && items[ST.hi]) { items[ST.hi].click(); }
+    else { send(); }
+  } else if (e.key === "Tab" && sugs.classList.contains("on")) {
+    e.preventDefault();
+    ST.hi = (ST.hi + 1) % items.length;
+    items.forEach(function(it,i){ it.classList.toggle("hi", i===ST.hi); });
+  } else if (e.key === "Escape") {
+    hideSugs(); document.getElementById("ibox").value=""; document.getElementById("sbtn").disabled=true;
+  }
+}
+
+function chip(cmd) { var b=document.getElementById("ibox"); b.value=cmd; b.focus(); document.getElementById("sbtn").disabled=false; handleInput(b); }
+function esc(t) { return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function init() {
+  renderTree(); renderBC(); renderCV(); setView("chat");
+  setTimeout(function(){
+    addMsg("sage", 'Welcome to <strong style="color:var(--gold-soft)">Sage</strong>, running on STARDUST.<br><br>' +
+      'Three dictionary contexts active simultaneously:<br>' +
+      '<span class="mcmd">CORE.txt</span> — personal life, private vault, planning, social<br>' +
+      '<span class="mcmd vc">LOCKERS.txt</span> — nonprofit locker management for unhoused participants<br>' +
+      '<span class="mcmd ac">IDEAINDEX.txt</span> — community idea platform<br><br>' +
+      'Your private domain is encrypted on this device. Open <strong>📖 Dictionaries</strong> to toggle contexts and find the <strong style="color:var(--violet-lt)">✨ glowing button</strong> to build your own language. One output. Always.');
+  }, 320);
+}
+init();
+</script>
+</body>
+</html>
