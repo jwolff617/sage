@@ -3,1146 +3,455 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sage · Phase 1 Demo</title>
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<title>Sage — Built on STARDUST</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-
 :root{
-  --bg:        #08080A;
-  --surface:   #0F0F12;
-  --card:      #161619;
-  --border:    #252529;
-  --border2:   #333338;
-  --gold:      #C9A84C;
-  --gold-dim:  #6B5520;
-  --gold-soft: #E8C97A;
-  --teal:      #0D9488;
-  --teal-lt:   #5EEAD4;
-  --white:     #F2F2F4;
-  --body:      #C8C8D0;
-  --muted:     #88889A;
-  --danger:    #E05555;
+  --bg:#09090B;--card:#111113;--border:#2A2A2F;--border2:#38383F;
+  --gold:#C9A84C;--gold-dim:#6B5520;--gold-soft:#E8C97A;
+  --teal:#0D9488;--teal-lt:#5EEAD4;
+  --white:#F4F4F6;--body:#C8C8D4;--muted:#9898A8;
 }
+html{scroll-behavior:smooth}
+[id]{scroll-margin-top:72px}
+body{background:var(--bg);color:var(--white);font-family:'DM Sans',sans-serif;font-weight:400;line-height:1.7;overflow-x:hidden}
+#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
 
-html,body{height:100%;overflow:hidden}
-body{
-  background:var(--bg);
-  color:var(--white);
-  font-family:'DM Sans',sans-serif;
-  font-weight:400;
-  display:flex;
-  flex-direction:column;
-}
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:.9rem 2.5rem;background:rgba(9,9,11,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.logo{font-family:'EB Garamond',serif;font-size:1.45rem;font-weight:700;letter-spacing:.14em;color:var(--white)}
+.logo span{color:var(--gold)}
+.nav-links{display:flex;gap:1.6rem}
+.nav-links a{font-size:.75rem;letter-spacing:.1em;color:var(--body);text-decoration:none;text-transform:uppercase;transition:color .18s}
+.nav-links a:hover{color:var(--gold)}
 
-/* ── TOP BAR ── */
-.topbar{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 1.25rem;height:48px;
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
-  flex-shrink:0;
-  z-index:50;
-}
-.topbar-logo{
-  font-family:'EB Garamond',serif;
-  font-size:1.25rem;font-weight:700;
-  letter-spacing:0.12em;color:var(--white);
-}
-.topbar-logo span{color:var(--gold)}
-.topbar-sub{
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.6rem;letter-spacing:0.18em;
-  color:var(--gold-dim);text-transform:uppercase;
-  margin-left:0.75rem;
-}
-.topbar-right{display:flex;align-items:center;gap:0.5rem}
+/* LAYOUT */
+.wrap{position:relative;z-index:1;max-width:1060px;margin:0 auto;padding:5rem 2rem}
+.wrap-sm{position:relative;z-index:1;max-width:1060px;margin:0 auto;padding:3.5rem 2rem}
 
-/* view toggle */
-.view-toggle{
-  display:flex;background:var(--card);
-  border:1px solid var(--border);border-radius:6px;
-  overflow:hidden;
-}
-.view-btn{
-  padding:0.3rem 0.75rem;
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.65rem;letter-spacing:0.1em;
-  text-transform:uppercase;color:var(--muted);
-  background:none;border:none;cursor:pointer;
-  transition:all 0.15s;
-}
-.view-btn.active{background:var(--gold-dim);color:var(--gold-soft)}
-.view-btn:hover:not(.active){color:var(--white)}
+/* TYPE */
+.lbl{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.2em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:.6rem}
+.h2{font-family:'EB Garamond',serif;font-size:clamp(2rem,4.5vw,3rem);font-weight:700;line-height:1.1;margin-bottom:1rem}
+.h2 em{color:var(--gold);font-style:italic}
+.lead{font-size:.98rem;color:var(--body);max-width:560px;line-height:1.85;margin-bottom:2.25rem}
 
-.icon-btn{
-  width:32px;height:32px;border-radius:6px;
-  border:1px solid var(--border);background:var(--card);
-  color:var(--muted);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  font-size:0.85rem;transition:all 0.15s;
-}
-.icon-btn:hover{border-color:var(--border2);color:var(--white)}
+/* REVEAL — start visible, animate in */
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:none}
 
-/* ── LAYOUT ── */
-.app-body{
-  flex:1;display:flex;overflow:hidden;
-}
+/* HERO */
+#hero{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6rem 2rem 4rem}
+.hero-eye{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.2em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:1.3rem;opacity:0;animation:fadeUp .7s .2s forwards}
+.hero-title{font-family:'EB Garamond',serif;font-size:clamp(5rem,13vw,9.5rem);font-weight:700;line-height:.9;letter-spacing:.06em;color:var(--white);opacity:0;animation:fadeUp .85s .4s forwards}
+.hero-rule{width:150px;height:1px;background:var(--gold);margin:1.5rem auto;opacity:0;animation:fadeUp .7s .6s forwards}
+.hero-sub{font-family:'EB Garamond',serif;font-style:italic;font-size:clamp(.9rem,2vw,1.2rem);color:var(--gold);letter-spacing:.07em;margin-bottom:1rem;opacity:0;animation:fadeUp .7s .7s forwards}
+.hero-desc{max-width:560px;font-size:.97rem;color:var(--body);line-height:1.8;margin:0 auto 2.2rem;opacity:0;animation:fadeUp .7s .85s forwards}
+.terminal{background:#0C0C0E;border:1px solid var(--border);border-radius:8px;padding:1rem 1.3rem;font-family:'JetBrains Mono',monospace;font-size:.8rem;text-align:left;max-width:600px;width:100%;margin:0 auto 2.5rem;opacity:0;animation:fadeUp .7s 1s forwards}
+.t-p{color:var(--gold)}.t-c{color:var(--teal-lt)}.t-o{color:var(--muted);font-size:.7rem;margin-top:.4rem}
+.cur{display:inline-block;width:7px;height:.88em;background:var(--gold);vertical-align:text-bottom;animation:blink 1s step-end infinite}
+.cta-row{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;opacity:0;animation:fadeUp .7s 1.1s forwards}
+.btn{padding:.6rem 1.6rem;font-size:.76rem;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;border-radius:4px;transition:all .18s;font-family:'DM Sans',sans-serif;font-weight:500}
+.btn-gold{background:var(--gold);color:#09090B}.btn-gold:hover{background:var(--gold-soft)}
+.btn-ghost{border:1px solid var(--border2);color:var(--body)}.btn-ghost:hover{border-color:var(--gold-dim);color:var(--gold)}
+.scroll-hint{position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.4rem;opacity:0;animation:fadeUp .7s 1.5s forwards}
+.scroll-hint span{font-size:.65rem;letter-spacing:.15em;color:var(--muted);text-transform:uppercase}
+.scroll-line{width:1px;height:34px;background:linear-gradient(to bottom,var(--gold-dim),transparent);animation:scrollPulse 2s ease-in-out infinite}
 
-/* ── LEFT SIDEBAR ── */
-.sidebar{
-  width:220px;flex-shrink:0;
-  background:var(--surface);
-  border-right:1px solid var(--border);
-  display:flex;flex-direction:column;
-  overflow:hidden;
-}
-.sidebar-section{
-  padding:0.75rem 1rem 0.5rem;
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.6rem;letter-spacing:0.15em;
-  text-transform:uppercase;color:var(--gold-dim);
-  border-bottom:1px solid var(--border);
-}
-.tree-list{flex:1;overflow-y:auto;padding:0.5rem 0}
-.tree-list::-webkit-scrollbar{width:3px}
-.tree-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.6rem 1.3rem}
+.stat-card:hover{border-color:var(--border2)}
+.stat-num{font-family:'EB Garamond',serif;font-size:2.6rem;font-weight:700;color:var(--gold);line-height:1;margin-bottom:.4rem}
+.stat-desc{font-size:.86rem;color:var(--body);line-height:1.6}
 
-.tree-node{
-  display:flex;align-items:center;gap:0.4rem;
-  padding:0.3rem 1rem;cursor:pointer;
-  font-size:0.8rem;color:var(--body);
-  transition:all 0.12s;border-left:2px solid transparent;
-  user-select:none;
-}
-.tree-node:hover{background:rgba(201,168,76,0.05);color:var(--white)}
-.tree-node.active{
-  background:rgba(201,168,76,0.08);
-  border-left-color:var(--gold);color:var(--gold-soft);
-}
-.tree-node.child{padding-left:1.75rem;font-size:0.75rem}
-.tree-node.grandchild{padding-left:2.5rem;font-size:0.72rem;color:var(--muted)}
-.tree-node.grandchild:hover{color:var(--body)}
-.tree-node.grandchild.active{color:var(--gold-soft)}
-.node-icon{font-size:0.7rem;opacity:0.7}
-.node-cmd{
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.6rem;color:var(--teal);
-  margin-left:auto;opacity:0.7;
-}
+/* PROTOCOL — HOW IT WORKS */
+.how-grid{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:start;margin-bottom:2.5rem}
+.mock-terminal{background:#0C0C0E;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.mock-bar{display:flex;align-items:center;gap:.4rem;padding:.65rem .9rem;background:#0A0A0C;border-bottom:1px solid var(--border)}
+.mock-dot{width:9px;height:9px;border-radius:50%}
+.mock-input{padding:.85rem .9rem;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--teal-lt);border-bottom:1px solid var(--border)}
+.mock-sugs{padding:.4rem .5rem}
+.mock-sug{display:flex;align-items:center;justify-content:space-between;padding:.42rem .6rem;border-radius:5px;font-size:.78rem}
+.mock-sug.hi{background:rgba(201,168,76,.1)}
+.sug-c{font-family:'JetBrains Mono',monospace;color:var(--teal-lt);font-size:.75rem}
+.sug-b{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--gold)}
+.how-pts{display:flex;flex-direction:column;gap:1.25rem}
+.how-pt{display:flex;gap:.8rem;align-items:flex-start}
+.how-n{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--gold);background:rgba(201,168,76,.08);border:1px solid var(--gold-dim);border-radius:4px;padding:.2rem .42rem;margin-top:.12rem;flex-shrink:0}
+.how-t{font-weight:500;color:var(--white);font-size:.91rem;margin-bottom:.2rem}
+.how-d{font-size:.84rem;color:var(--body);line-height:1.7}
 
-/* ── MAIN AREA ── */
-.main{
-  flex:1;display:flex;flex-direction:column;overflow:hidden;
-}
+/* PILLARS */
+.pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:2.5rem}
+.pillar{background:var(--card);border:1px solid var(--border);border-top:2px solid var(--teal);border-radius:8px;padding:1.5rem 1.25rem;transition:transform .18s,border-top-color .18s}
+.pillar:hover{transform:translateY(-3px);border-top-color:var(--gold)}
+.pil-icon{font-family:'JetBrains Mono',monospace;font-size:.64rem;color:var(--teal-lt);margin-bottom:.6rem;letter-spacing:.07em}
+.pil-title{font-family:'EB Garamond',serif;font-size:1.15rem;font-weight:700;color:var(--white);margin-bottom:.4rem}
+.pil-desc{font-size:.83rem;color:var(--body);line-height:1.7}
 
-/* ── TREE PATH BREADCRUMB ── */
-.breadcrumb{
-  padding:0.5rem 1.25rem;
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.7rem;color:var(--muted);
-  display:flex;align-items:center;gap:0.4rem;
-  flex-shrink:0;
-}
-.bc-seg{color:var(--body);cursor:pointer}
-.bc-seg:hover{color:var(--gold)}
-.bc-seg.active{color:var(--gold-soft)}
-.bc-arrow{color:var(--border2)}
+/* DEMO SECTION */
+.demo-shell{background:#0A0A0C;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.demo-tabs{display:flex;border-bottom:1px solid var(--border);overflow-x:auto}
+.dtab{padding:.58rem 1rem;font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.04em;color:var(--muted);background:none;border:none;border-right:1px solid var(--border);cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.dtab:hover{color:var(--white);background:rgba(255,255,255,.03)}.dtab.active{color:var(--gold-soft);background:rgba(201,168,76,.07)}
+.demo-body{padding:1.3rem 1.4rem}
+.demo-winbar{display:flex;align-items:center;gap:.4rem;margin-bottom:.9rem}
+.demo-dot{width:9px;height:9px;border-radius:50%}
+.demo-user{margin-bottom:.8rem}
+.demo-aet{font-family:'JetBrains Mono',monospace;font-size:.67rem;background:#060608;border:1px solid var(--border);border-radius:6px;padding:.75rem .9rem;margin-bottom:.9rem;color:var(--teal-lt);white-space:pre;min-height:52px;opacity:0;transition:opacity .4s;line-height:1.6}
+.demo-resp{opacity:0;transition:opacity .5s}
+.demo-inner{display:flex;align-items:flex-start;gap:.65rem}
+.demo-ava{width:26px;height:26px;border-radius:5px;background:var(--gold-dim);display:flex;align-items:center;justify-content:center;font-family:'EB Garamond',serif;font-weight:700;font-size:.75rem;color:var(--gold-soft);flex-shrink:0}
+.demo-rname{font-family:'JetBrains Mono',monospace;font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.25rem}
+.demo-rtext{font-size:.88rem;color:var(--body);line-height:1.75}
+.demo-foot{padding:.55rem 1.4rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.demo-lbl-el{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--muted);letter-spacing:.07em;text-transform:uppercase}
+.demo-badge{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--gold-dim)}
 
-/* ── STARDUST CODE VIEW ── */
-.code-view{
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
-  padding:0.75rem 1.25rem;
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.72rem;
-  color:var(--body);
-  flex-shrink:0;
-  max-height:140px;
-  overflow-y:auto;
-  display:none;
-}
-.code-view.visible{display:block}
-.code-prompt{color:var(--gold)}
-.code-tree{color:var(--teal-lt);margin-top:0.25rem;white-space:pre}
-.code-dim{color:var(--muted)}
+/* DICTIONARIES */
+.dict-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.dict-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.5rem 1.25rem}
+.dict-nm{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--gold);letter-spacing:.07em;margin-bottom:.38rem}
+.dict-title{font-family:'EB Garamond',serif;font-size:1.1rem;font-weight:700;color:var(--white);margin-bottom:.6rem}
+.dict-desc{font-size:.83rem;color:var(--body);line-height:1.68}
+.dict-tag{display:inline-block;margin-top:.85rem;padding:.16rem .5rem;background:rgba(13,148,136,.1);border:1px solid var(--teal);border-radius:3px;font-size:.65rem;color:var(--teal-lt);font-family:'JetBrains Mono',monospace}
 
-/* ── APP GRID VIEW ── */
-.app-grid-view{
-  flex:1;overflow:auto;padding:1.25rem;
-  display:none;
-}
-.app-grid-view.visible{display:block}
-.grid-title{
-  font-family:'EB Garamond',serif;
-  font-size:1.4rem;font-weight:700;
-  color:var(--white);margin-bottom:0.25rem;
-}
-.grid-subtitle{font-size:0.8rem;color:var(--muted);margin-bottom:1.25rem}
-.box-grid{
-  display:flex;flex-wrap:wrap;gap:0.6rem;
-  align-items:flex-start;
-}
-.box-node{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:6px;
-  padding:0.6rem 0.85rem;
-  cursor:pointer;
-  transition:all 0.15s;
-  min-width:100px;
-}
-.box-node:hover{border-color:var(--border2);transform:translateY(-1px)}
-.box-node.selected{border-color:var(--gold);background:rgba(201,168,76,0.06)}
-.box-node.parent-box{
-  border-top:2px solid var(--teal);
-  min-width:130px;
-}
-.box-node.parent-box.selected{border-top-color:var(--gold)}
-.box-label{font-size:0.8rem;font-weight:500;color:var(--white)}
-.box-cmd{
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.6rem;color:var(--teal-lt);
-  margin-top:0.2rem;
-}
-.box-count{font-size:0.7rem;color:var(--muted);margin-top:0.15rem}
-.grid-arrow{
-  color:var(--border2);font-size:1rem;
-  display:flex;align-items:center;
-  align-self:center;
-}
-.child-grid{
-  display:flex;flex-wrap:wrap;gap:0.5rem;
-  margin-top:0.75rem;padding-top:0.75rem;
-  border-top:1px solid var(--border);
-  width:100%;
-}
+/* PHASES */
+.phases{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.phase{padding:1.5rem 1.1rem;border-right:1px solid var(--border);position:relative}
+.phase:last-child{border-right:none}
+.phase-bar{position:absolute;top:0;left:0;right:0;height:2px}
+.phase-n{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--gold-dim);letter-spacing:.14em;text-transform:uppercase;margin-bottom:.38rem}
+.phase-name{font-family:'EB Garamond',serif;font-size:1rem;font-weight:700;color:var(--teal-lt);margin-bottom:.6rem}
+.phase-desc{font-size:.78rem;color:var(--body);line-height:1.62}
 
-/* ── CHAT VIEW ── */
-.chat-view{
-  flex:1;overflow:hidden;display:flex;flex-direction:column;
-}
-.chat-messages{
-  flex:1;overflow-y:auto;padding:1.25rem;
-  display:flex;flex-direction:column;gap:1rem;
-}
-.chat-messages::-webkit-scrollbar{width:3px}
-.chat-messages::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+/* MOAT */
+.moat-row{display:grid;grid-template-columns:220px 1fr;gap:3rem;align-items:center;padding:3rem 0;border-top:1px solid var(--border)}
+.moat-big{font-family:'EB Garamond',serif;font-size:5.2rem;font-weight:700;color:var(--gold);line-height:.9}
+.moat-lbl{font-family:'JetBrains Mono',monospace;font-size:.64rem;color:var(--muted);letter-spacing:.1em;margin-top:.4rem}
 
-.msg{display:flex;gap:0.75rem;align-items:flex-start;animation:msgIn 0.25s ease}
-@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.msg-avatar{
-  width:28px;height:28px;border-radius:6px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:0.7rem;font-weight:700;flex-shrink:0;
-  font-family:'EB Garamond',serif;
-}
-.msg-avatar.sage{background:var(--gold-dim);color:var(--gold-soft)}
-.msg-avatar.user{background:var(--border2);color:var(--body)}
-.msg-content{flex:1;padding-top:0.1rem}
-.msg-name{
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.6rem;letter-spacing:0.1em;
-  text-transform:uppercase;color:var(--muted);
-  margin-bottom:0.3rem;
-}
-.msg-text{font-size:0.875rem;color:var(--body);line-height:1.7}
-.msg-text.user-text{color:var(--white)}
-.msg-cmd{
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.78rem;color:var(--teal-lt);
-  background:rgba(13,148,136,0.08);
-  border:1px solid rgba(13,148,136,0.2);
-  border-radius:4px;padding:0.1rem 0.4rem;
-  display:inline-block;
-}
-.msg-tree{
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.72rem;
-  background:var(--card);border:1px solid var(--border);
-  border-radius:6px;padding:0.75rem 1rem;
-  margin-top:0.5rem;color:var(--teal-lt);
-  white-space:pre;overflow-x:auto;
-}
-.entry-card{
-  background:var(--card);border:1px solid var(--border);
-  border-radius:8px;padding:1rem 1.1rem;
-  margin-top:0.5rem;
-}
-.entry-tag{
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.6rem;color:var(--gold);
-  letter-spacing:0.1em;text-transform:uppercase;
-  margin-bottom:0.4rem;
-}
-.entry-text{font-size:0.875rem;color:var(--body);line-height:1.75}
-.entry-meta{
-  font-size:0.72rem;color:var(--muted);margin-top:0.5rem;
-  font-family:'JetBrains Mono',monospace;
-}
+/* REVENUE */
+.rev-hdr{display:grid;grid-template-columns:2fr 2.5fr 1fr;gap:1rem;padding:.4rem 1rem;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-dim);font-family:'JetBrains Mono',monospace}
+.rev-row{display:grid;grid-template-columns:2fr 2.5fr 1fr;gap:1rem;padding:.85rem 1rem;background:var(--card);border:1px solid var(--border);border-radius:6px;align-items:center;font-size:.84rem;margin-bottom:.4rem;transition:border-color .18s}
+.rev-row:hover{border-color:var(--border2)}
+.rev-name{color:var(--white);font-weight:500}.rev-mech{color:var(--body)}
+.rev-margin{text-align:right;font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--teal-lt)}
 
-/* suggestions dropdown */
-.suggestions{
-  background:var(--card);
-  border:1px solid var(--border2);
-  border-radius:8px;
-  overflow:hidden;
-  margin:0 1.25rem 0.5rem;
-  display:none;
-}
-.suggestions.visible{display:block}
-.sug-item{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0.5rem 1rem;cursor:pointer;
-  transition:background 0.1s;font-size:0.8rem;
-}
-.sug-item:hover,.sug-item.highlighted{background:rgba(201,168,76,0.08)}
-.sug-item:not(:last-child){border-bottom:1px solid var(--border)}
-.sug-cmd{font-family:'JetBrains Mono',monospace;color:var(--teal-lt);font-size:0.78rem}
-.sug-desc{color:var(--muted);font-size:0.75rem}
-.sug-badge{
-  font-family:'JetBrains Mono',monospace;font-size:0.6rem;
-  color:var(--gold);background:rgba(201,168,76,0.1);
-  border:1px solid var(--gold-dim);border-radius:3px;
-  padding:0.1rem 0.35rem;
-}
+/* FOOTER */
+footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:2.25rem 2rem;max-width:1060px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+.foot-logo{font-family:'EB Garamond',serif;font-size:1.35rem;font-weight:700;letter-spacing:.12em}
+.foot-logo span{color:var(--gold)}
+.foot-note{font-size:.7rem;color:var(--gold-dim);font-family:'JetBrains Mono',monospace;letter-spacing:.07em}
+.foot-links{display:flex;gap:1.3rem}
+.foot-links a{font-size:.76rem;color:var(--muted);text-decoration:none;transition:color .18s}
+.foot-links a:hover{color:var(--gold)}
 
-/* ── INPUT AREA ── */
-.input-wrap{
-  padding:0.75rem 1.25rem 1rem;
-  background:var(--surface);
-  border-top:1px solid var(--border);
-  flex-shrink:0;
-}
-.input-row{display:flex;gap:0.5rem;align-items:flex-end}
-.input-box{
-  flex:1;background:var(--card);
-  border:1px solid var(--border2);border-radius:8px;
-  padding:0.65rem 1rem;
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.85rem;color:var(--teal-lt);
-  resize:none;outline:none;
-  min-height:40px;max-height:120px;
-  transition:border-color 0.15s;
-  line-height:1.5;
-}
-.input-box::placeholder{color:var(--muted);font-family:'DM Sans',sans-serif;font-size:0.82rem}
-.input-box:focus{border-color:var(--gold-dim)}
-.send-btn{
-  width:40px;height:40px;border-radius:8px;
-  background:var(--gold);border:none;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  color:var(--bg);font-size:1rem;
-  transition:all 0.15s;flex-shrink:0;
-}
-.send-btn:hover{background:var(--gold-soft)}
-.send-btn:disabled{background:var(--border);cursor:default;color:var(--muted)}
-.input-hint{
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.6rem;color:var(--muted);
-  margin-top:0.4rem;letter-spacing:0.05em;
-}
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes scrollPulse{0%,100%{opacity:.25}50%{opacity:1}}
 
-/* ── RIGHT PANEL (dict / settings) ── */
-.right-panel{
-  width:260px;flex-shrink:0;
-  background:var(--surface);
-  border-left:1px solid var(--border);
-  display:flex;flex-direction:column;
-  overflow:hidden;
-  transition:width 0.2s ease;
+/* RESPONSIVE */
+@media(max-width:780px){
+  .stats-grid,.dict-grid,.pillars{grid-template-columns:1fr}
+  .phases{grid-template-columns:1fr 1fr}
+  .moat-row,.how-grid{grid-template-columns:1fr;gap:1.5rem}
+  .nav-links{display:none}
+  .rev-hdr,.rev-row{grid-template-columns:1fr;gap:.2rem}
+  .rev-margin{text-align:left}
+  footer{flex-direction:column;text-align:center}
 }
-.right-panel.collapsed{width:0;border-left:none}
-.panel-header{
-  padding:0.75rem 1rem;
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  flex-shrink:0;
-}
-.panel-title{
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.65rem;letter-spacing:0.15em;
-  text-transform:uppercase;color:var(--gold);
-}
-.panel-close{
-  background:none;border:none;color:var(--muted);
-  cursor:pointer;font-size:0.9rem;
-  transition:color 0.15s;
-}
-.panel-close:hover{color:var(--white)}
-.panel-body{flex:1;overflow-y:auto;padding:0.75rem 0}
-.panel-body::-webkit-scrollbar{width:3px}
-.panel-body::-webkit-scrollbar-thumb{background:var(--border2)}
-
-.dict-item{
-  padding:0.75rem 1rem;
-  border-bottom:1px solid var(--border);
-  cursor:pointer;
-}
-.dict-item:last-child{border-bottom:none}
-.dict-check-row{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.35rem}
-.dict-check{
-  width:16px;height:16px;border-radius:3px;
-  border:1px solid var(--border2);
-  background:var(--card);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;transition:all 0.15s;
-}
-.dict-check.checked{background:var(--teal);border-color:var(--teal);color:var(--bg);font-size:0.6rem}
-.dict-name-label{
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.72rem;color:var(--gold);letter-spacing:0.08em;
-}
-.dict-desc-sm{font-size:0.75rem;color:var(--muted);line-height:1.55;padding-left:1.4rem}
-
-.settings-row{
-  padding:0.6rem 1rem;
-  display:flex;align-items:center;justify-content:space-between;
-  border-bottom:1px solid var(--border);font-size:0.8rem;
-}
-.settings-row:last-child{border-bottom:none}
-.settings-label{color:var(--body)}
-.toggle{
-  width:32px;height:18px;border-radius:9px;
-  background:var(--border2);border:none;cursor:pointer;
-  position:relative;transition:background 0.2s;flex-shrink:0;
-}
-.toggle.on{background:var(--teal)}
-.toggle::after{
-  content:'';position:absolute;
-  top:2px;left:2px;width:14px;height:14px;
-  border-radius:50%;background:var(--white);
-  transition:transform 0.2s;
-}
-.toggle.on::after{transform:translateX(14px)}
-
-/* loading dots */
-.loading-dots span{
-  display:inline-block;width:5px;height:5px;
-  border-radius:50%;background:var(--gold);
-  margin:0 2px;
-  animation:dot 1.2s ease-in-out infinite;
-}
-.loading-dots span:nth-child(2){animation-delay:0.2s}
-.loading-dots span:nth-child(3){animation-delay:0.4s}
-@keyframes dot{0%,80%,100%{transform:scale(0.6);opacity:0.4}40%{transform:scale(1);opacity:1}}
-
-/* empty state */
-.empty-state{
-  flex:1;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  text-align:center;padding:2rem;
-  color:var(--muted);
-}
-.empty-logo{
-  font-family:'EB Garamond',serif;
-  font-size:3rem;font-weight:700;
-  letter-spacing:0.1em;color:var(--border2);
-  margin-bottom:0.5rem;
-}
-.empty-hint{font-size:0.8rem;line-height:1.7;max-width:320px}
-.quick-chip{
-  display:inline-block;
-  margin:0.25rem;padding:0.3rem 0.75rem;
-  background:var(--card);border:1px solid var(--border2);
-  border-radius:20px;font-family:'JetBrains Mono',monospace;
-  font-size:0.7rem;color:var(--teal-lt);cursor:pointer;
-  transition:all 0.15s;
-}
-.quick-chip:hover{border-color:var(--teal);color:var(--white)}
 </style>
 </head>
 <body>
+<canvas id="stars"></canvas>
 
-<!-- TOP BAR -->
-<div class="topbar">
-  <div style="display:flex;align-items:center">
-    <div class="topbar-logo">S<span>AGE</span></div>
-    <div class="topbar-sub">STARDUST · Phase 1</div>
+<nav>
+  <div class="logo">S<span>AGE</span></div>
+  <div class="nav-links">
+    <a href="#problem">Problem</a>
+    <a href="#protocol">Protocol</a>
+    <a href="#demo">Demo</a>
+    <a href="#dictionaries">Dictionaries</a>
+    <a href="#roadmap">Roadmap</a>
+    <a href="#model">Model</a>
   </div>
-  <div style="display:flex;align-items:center;gap:0.75rem">
-    <div class="view-toggle">
-      <button class="view-btn active" id="btn-chat" onclick="setView('chat')">Chat</button>
-      <button class="view-btn" id="btn-app" onclick="setView('app')">App</button>
-    </div>
-    <button class="icon-btn" id="dict-toggle-btn" onclick="togglePanel('dict')" title="Dictionaries">📖</button>
-    <button class="icon-btn" id="settings-toggle-btn" onclick="togglePanel('settings')" title="Settings">⚙</button>
+</nav>
+
+<!-- HERO -->
+<div id="hero">
+  <p class="hero-eye">Sage · Built on STARDUST</p>
+  <h1 class="hero-title">SAGE</h1>
+  <div class="hero-rule"></div>
+  <p class="hero-sub">The language of human intent.</p>
+  <p class="hero-desc">No app. No interface. No list of results. Type the shortest abbreviation of what you want. The AI resolves, chains, and executes. One output. Every time.</p>
+  <div class="terminal">
+    <div><span class="t-p">&#8250;&nbsp;</span><span class="t-c" id="tw"></span><span class="cur"></span></div>
+    <div class="t-o" id="tout" style="opacity:0;transition:opacity .4s"></div>
+  </div>
+  <div class="cta-row">
+    <a href="#protocol" class="btn btn-gold">See the Protocol</a>
+    <a href="#demo" class="btn btn-ghost">Watch It Work</a>
+  </div>
+  <div class="scroll-hint"><span>Scroll</span><div class="scroll-line"></div></div>
+</div>
+
+<!-- PROBLEM -->
+<div id="problem" class="wrap reveal">
+  <p class="lbl">§01 — The Problem</p>
+  <h2 class="h2">The <em>UI Freeze</em></h2>
+  <p class="lead">The app paradigm has reached its ceiling. Thousands of interfaces, each demanding a new login, layout, and learning curve. We replaced friction with more friction and called it innovation.</p>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num">8K+</div><div class="stat-desc">Apps on the average smartphone. Each a separate universe with its own logic, layout, and learning curve.</div></div>
+    <div class="stat-card"><div class="stat-num">0 sec</div><div class="stat-desc">Time users want between intent and outcome. Apps deliver 30-step flows, push notifications, and dark patterns instead.</div></div>
+    <div class="stat-card"><div class="stat-num">&#8734; results</div><div class="stat-desc">What every search returns. Infinite scrolling is decision paralysis industrialized. It is not a feature.</div></div>
   </div>
 </div>
 
-<!-- APP BODY -->
-<div class="app-body">
+<!-- PROTOCOL — HOW IT WORKS -->
+<div id="protocol" class="wrap reveal">
+  <p class="lbl">§02 — The Protocol</p>
+  <h2 class="h2">STARDUST:<br><em>how it works</em></h2>
+  <p class="lead">Users type the shortest unambiguous abbreviation of any action. A live dropdown narrows candidates in real time. One enter key. One result. Voice and text run simultaneously through the same parser.</p>
 
-  <!-- LEFT SIDEBAR: Tree Navigation -->
-  <div class="sidebar">
-    <div class="sidebar-section">STARDUST Tree</div>
-    <div class="tree-list" id="tree-list"></div>
+  <div class="how-grid">
+    <div class="mock-terminal">
+      <div class="mock-bar">
+        <div class="mock-dot" style="background:#FF5F57"></div>
+        <div class="mock-dot" style="background:#FEBC2E"></div>
+        <div class="mock-dot" style="background:#28C840"></div>
+      </div>
+      <div class="mock-input">don r&nbsp;<span style="display:inline-block;width:6px;height:.88em;background:var(--teal-lt);vertical-align:text-bottom;animation:blink 1s step-end infinite"></span></div>
+      <div class="mock-sugs">
+        <div class="mock-sug hi"><span class="sug-c">donate recurring</span><span class="sug-b">&#9733; best match</span></div>
+        <div class="mock-sug"><span class="sug-c">donate rent fund</span><span style="font-size:.7rem;color:var(--muted)">personal alias</span></div>
+        <div class="mock-sug"><span class="sug-c">don't remember</span><span style="font-size:.7rem;color:var(--muted)">fgt alias</span></div>
+      </div>
+    </div>
+    <div class="how-pts">
+      <div class="how-pt"><div class="how-n">01</div><div><div class="how-t">Abbreviation-first input</div><div class="how-d">Type the fewest letters that uniquely identify your intent. The engine resolves ambiguity live. Voice input is simultaneously active — same parser, same output.</div></div></div>
+      <div class="how-pt"><div class="how-n">02</div><div><div class="how-t">Abstract Execution Tree</div><div class="how-d">Every input compiles to a nested execution graph. Verbs chain recursively: SCHEDULE &rarr; PAY &rarr; fallback &rarr; SEND. Zero silent failures — every blocked step surfaces a human-readable prompt.</div></div></div>
+      <div class="how-pt"><div class="how-n">03</div><div><div class="how-t">One output. Always.</div><div class="how-d">The system is mathematically prohibited from returning more than one result. The 10&times;10 constraint protocol narrows 10,000 candidates to exactly 1 using 10 tags and 10 questions.</div></div></div>
+      <div class="how-pt"><div class="how-n">04</div><div><div class="how-t">Local LLM. No server scale.</div><div class="how-d">All inference runs on the user's device. Server costs are fixed. Every new user adds value to the protocol without adding cost to the business.</div></div></div>
+    </div>
   </div>
 
-  <!-- MAIN -->
-  <div class="main">
+  <div class="pillars">
+    <div class="pillar"><div class="pil-icon">prv &middot; bnk &middot; cvc &middot; biz &middot; soc</div><div class="pil-title">10 Domain Tree</div><div class="pil-desc">Private, Planning, Home, Civic, Banking, Political, Business, Non-Profit, Knowledge, and Social. Every human intent mapped to an executable leaf node.</div></div>
+    <div class="pillar"><div class="pil-icon">wrt &middot; buy &middot; don &middot; dst &middot; rem &middot; sch</div><div class="pil-title">Composable Verbs</div><div class="pil-desc">14 core execution verbs, each a first-class function accepting other functions as arguments. Arbitrarily deep nesting with typed error propagation.</div></div>
+    <div class="pillar"><div class="pil-icon">user.dict &middot; marketplace &middot; protocol</div><div class="pil-title">Personal Language</div><div class="pil-desc">Every user writes their own dictionary. Aliases, shortcuts, custom syntax. A teenager's first personal dictionary is their first act of systems design.</div></div>
+  </div>
+</div>
 
-    <!-- BREADCRUMB -->
-    <div class="breadcrumb" id="breadcrumb">
-      <span class="bc-seg active" onclick="navTo('root')">~</span>
+<!-- DEMO — LIVE SCENARIOS -->
+<div id="demo" class="wrap reveal">
+  <p class="lbl">§03 — Live Demo</p>
+  <h2 class="h2">Five real commands.<br><em>Five single outputs.</em></h2>
+  <p class="lead">Watch a user type a STARDUST command, see the Abstract Execution Tree compile in real time, then see Sage return exactly one result. Click any tab or let them cycle automatically.</p>
+
+  <div class="demo-shell" id="demo-shell">
+    <div class="demo-tabs">
+      <button class="dtab active" onclick="pickDemo(0)">&#x1F4B8; Donate</button>
+      <button class="dtab" onclick="pickDemo(1)">&#x1F3E0; Pay Rent</button>
+      <button class="dtab" onclick="pickDemo(2)">&#x1F4D3; Journal</button>
+      <button class="dtab" onclick="pickDemo(3)">&#x1F3AF; Set Goal</button>
+      <button class="dtab" onclick="pickDemo(4)">&#x1F37D; Plan Dinner</button>
     </div>
-
-    <!-- CODE VIEW (STARDUST view) -->
-    <div class="code-view" id="code-view">
-      <span class="code-prompt">sage › </span><span id="code-context" class="code-tree">root</span>
-      <div id="code-tree-display" class="code-dim" style="margin-top:0.35rem"></div>
-    </div>
-
-    <!-- APP GRID VIEW -->
-    <div class="app-grid-view" id="app-grid-view"></div>
-
-    <!-- CHAT VIEW -->
-    <div class="chat-view" id="chat-view">
-      <div class="chat-messages" id="chat-messages">
-        <div class="empty-state" id="empty-state">
-          <div class="empty-logo">SAGE</div>
-          <div class="empty-hint" style="margin-bottom:1.25rem">Type or speak the shortest abbreviation of what you want. The AI resolves, chains, and executes.</div>
+    <div class="demo-body">
+      <div class="demo-winbar">
+        <div class="demo-dot" style="background:#FF5F57"></div>
+        <div class="demo-dot" style="background:#FEBC2E"></div>
+        <div class="demo-dot" style="background:#28C840"></div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--muted);margin-left:.5rem">STARDUST &middot; sage terminal</span>
+      </div>
+      <div class="demo-user">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--gold)">user &rsaquo; </span>
+        <span id="di" style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--teal-lt)"></span><span id="dc" style="display:inline-block;width:7px;height:.86em;background:var(--teal-lt);vertical-align:text-bottom;animation:blink 1s step-end infinite;margin-left:1px"></span>
+      </div>
+      <div id="daet" class="demo-aet"></div>
+      <div id="dresp" class="demo-resp">
+        <div class="demo-inner">
+          <div class="demo-ava">S</div>
           <div>
-            <div class="quick-chip" onclick="useChip('prv diary write today felt peaceful')">prv diary write</div>
-            <div class="quick-chip" onclick="useChip('hm util track electric bill')">hm util track</div>
-            <div class="quick-chip" onclick="useChip('prv lust new attraction logged')">prv lust log</div>
-            <div class="quick-chip" onclick="useChip('soc frnd add alex goals hiking')">soc frnd add</div>
-            <div class="quick-chip" onclick="useChip('pln goal new learn guitar 90 days')">pln goal new</div>
-            <div class="quick-chip" onclick="useChip('prv drm last night forest and stars')">prv drm log</div>
-            <div class="quick-chip" onclick="useChip('pln evnt concert friday night')">pln evnt add</div>
-            <div class="quick-chip" onclick="useChip('pln place fav coffee shop downtown')">pln place save</div>
+            <div class="demo-rname">Sage &middot; STARDUST</div>
+            <div id="dtext" class="demo-rtext"></div>
           </div>
         </div>
       </div>
-
-      <!-- SUGGESTIONS -->
-      <div class="suggestions" id="suggestions"></div>
-
-      <!-- INPUT -->
-      <div class="input-wrap">
-        <div class="input-row">
-          <textarea class="input-box" id="input-box"
-            placeholder="type shortest abbreviation · voice + text simultaneous"
-            rows="1"
-            onkeydown="handleKey(event)"
-            oninput="handleInput(this)"></textarea>
-          <button class="send-btn" id="send-btn" onclick="sendMessage()" disabled>➤</button>
-        </div>
-        <div class="input-hint">enter to send · tab to select suggestion · esc to clear</div>
-      </div>
     </div>
-
-  </div>
-
-  <!-- RIGHT PANEL -->
-  <div class="right-panel collapsed" id="right-panel">
-    <div class="panel-header">
-      <div class="panel-title" id="panel-title">Dictionaries</div>
-      <button class="panel-close" onclick="closePanel()">✕</button>
+    <div class="demo-foot">
+      <span id="dlbl" class="demo-lbl-el"></span>
+      <span class="demo-badge">one output &middot; always</span>
     </div>
-    <div class="panel-body" id="panel-body"></div>
   </div>
-
 </div>
 
+<!-- DICTIONARIES -->
+<div id="dictionaries" class="wrap reveal">
+  <p class="lbl">§04 — The Dictionary Matrix</p>
+  <h2 class="h2">Philosophy as<br><em>operating system</em></h2>
+  <p class="lead">Dictionaries are modular .txt parameter files defining what the AI considers valid, appropriate, and visible. Stack them, toggle them, sell them. The AI's values are yours to configure.</p>
+  <div class="dict-grid">
+    <div class="dict-card"><div class="dict-nm">CORE.txt</div><div class="dict-title">The Baseline</div><div class="dict-desc">Ships with every instance. A map of fundamental human nature: drives, emotions, survival instincts, social bonds. Neutral-optimist. Cannot be deleted.</div><span class="dict-tag">default &middot; always active</span></div>
+    <div class="dict-card"><div class="dict-nm">URBANWOLF.txt</div><div class="dict-title">The Infrastructure Lens</div><div class="dict-desc">Rewrites priorities toward hyper-dense urban environments, pedestrian-first flow, municipal optimization, and community-coded communication.</div><span class="dict-tag">community &middot; civic</span></div>
+    <div class="dict-card"><div class="dict-nm">THEOUTLAW.txt</div><div class="dict-title">Radical Autonomy</div><div class="dict-desc">Absolute privacy-maximization. Auto-encrypts outbound strings, blocks institutional tracking, suppresses governmental nodes. Weights DESTROY and FORGET verbs.</div><span class="dict-tag">privacy &middot; sovereignty</span></div>
+  </div>
+  <div style="margin-top:1.6rem;padding:1.3rem;background:var(--card);border:1px solid var(--border);border-radius:8px">
+    <p class="lbl" style="margin-bottom:.4rem">The Open Marketplace</p>
+    <p style="font-size:.88rem;color:var(--body);line-height:1.8">Any writer, psychologist, urban planner, or teenager can author a dictionary and publish it on the Sage Registry. Authors keep <strong style="color:var(--white)">92%</strong> of every sale. The platform takes 8% — what infrastructure actually costs with a fair margin. Dictionaries can be sold, gifted, time-loaned, or open-sourced.</p>
+  </div>
+</div>
+
+<!-- PRIVATE -->
+<div class="wrap-sm reveal">
+  <p class="lbl">§05 — The Private Domain</p>
+  <h2 class="h2"><em>The mind cannot<br>be a prison.</em></h2>
+  <p class="lead">Encrypted on-device. No server holds it. No policy can surface it. Any thought, feeling, or desire — logged without judgment, never exposed.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.35rem">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--gold);margin-bottom:.6rem">Silent Connections Protocol</div>
+      <p style="font-size:.84rem;color:var(--body);line-height:1.75">Two users independently log mutual affection. Both have signed the non-harassment contract. The system runs a cryptographic match locally — revealing only the binary result to both simultaneously. Content never exposed to anyone, including the platform.</p>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.35rem">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--gold);margin-bottom:.6rem">Minor Protection Framework</div>
+      <p style="font-size:.84rem;color:var(--body);line-height:1.75">Date of birth required at registration. State-compiled legal parameters determine node access for minors. Parents set permissions — not content visibility. Individual rights are the philosophy; legal compliance is the floor.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ROADMAP -->
+<div id="roadmap" class="wrap reveal">
+  <p class="lbl">§06 — The Roadmap</p>
+  <h2 class="h2">Four phases,<br><em>one protocol</em></h2>
+  <p class="lead">Capital-efficient sequencing. Each phase proves the next. Near-zero operating cost in Phase 1 means we live long enough to reach the scale that matters.</p>
+  <div class="phases">
+    <div class="phase"><div class="phase-bar" style="background:var(--teal)"></div><div class="phase-n">Phase 01</div><div class="phase-name">The Wedge</div><div class="phase-desc">Local encrypted knowledge base for developer power-users. Syntax baseline, Silent Connection protocol, personal dictionary. Near-zero operating cost.</div></div>
+    <div class="phase"><div class="phase-bar" style="background:#7C3AED"></div><div class="phase-n">Phase 02</div><div class="phase-name">The Civic Shift</div><div class="phase-desc">Municipal outcome frameworks in city wards. Citizen audits, bounty enforcement, block coordination. Builds credibility without scaling infrastructure.</div></div>
+    <div class="phase"><div class="phase-bar" style="background:var(--gold)"></div><div class="phase-n">Phase 03</div><div class="phase-name">Enterprise Scale</div><div class="phase-desc">B2B Commercial Tree Registry opens. Airlines, housing, employers, digital commerce. Dictionary marketplace live. Protocol licensing begins.</div></div>
+    <div class="phase"><div class="phase-bar" style="background:var(--muted)"></div><div class="phase-n">Phase 04</div><div class="phase-name">The Slate</div><div class="phase-desc">STARDUST hardware standard. Licensed to manufacturers. No app store, no browser. Terminal, mic, keyboard. The post-phone device.</div></div>
+  </div>
+</div>
+
+<!-- MOAT -->
+<div class="wrap-sm reveal">
+  <p class="lbl">§07 — The Mathematical Moat</p>
+  <div class="moat-row">
+    <div><div class="moat-big">10&times;10</div><div class="moat-lbl">tags &times; questions = 1 result</div></div>
+    <div>
+      <h2 class="h2" style="font-size:1.9rem;margin-bottom:.85rem">No list. <em>Ever.</em></h2>
+      <p style="font-size:.93rem;color:var(--body);line-height:1.8;margin-bottom:.85rem">10 parameter tags. 10 sequential clarifying questions. Each bisects the candidate space. 10,000 candidates becomes 1. Hard constraints are never silently violated — the engine surfaces conflicts and asks.</p>
+      <p style="font-size:.93rem;color:var(--body);line-height:1.8">Enterprises must speak STARDUST to appear in results. Compliance is not gatekeeping — it is the technical precondition for the promise to hold. Switching costs compound with every integration.</p>
+    </div>
+  </div>
+</div>
+
+<!-- REVENUE -->
+<div id="model" class="wrap reveal">
+  <p class="lbl">§08 — The Revenue Model</p>
+  <h2 class="h2">Billions through<br><em>fair pricing</em></h2>
+  <p class="lead">Charge what infrastructure costs plus a reasonable margin. Make billions through a billion users, not by extracting from any individual.</p>
+  <div class="rev-hdr"><span>Stream</span><span>Mechanism</span><span style="text-align:right">Take</span></div>
+  <div class="rev-row"><div class="rev-name">Commercial Tree Registry</div><div class="rev-mech">Monthly slot fee per enterprise inventory namespace</div><div class="rev-margin">per slot</div></div>
+  <div class="rev-row"><div class="rev-name">Transaction Micro-Fee</div><div class="rev-mech">Fraction of a cent per B2B settlement via BaaS</div><div class="rev-margin">~$0.001</div></div>
+  <div class="rev-row"><div class="rev-name">Dictionary Marketplace</div><div class="rev-mech">Authors keep 92% of every dictionary sale</div><div class="rev-margin">8%</div></div>
+  <div class="rev-row"><div class="rev-name">Premium User Tier</div><div class="rev-mech">Unlimited dictionaries, full multimodal Bore, Silent Connections</div><div class="rev-margin">fair SaaS</div></div>
+  <div class="rev-row"><div class="rev-name">Developer SDK</div><div class="rev-mech">Per-seat licensing for STARDUST-native app builders</div><div class="rev-margin">per seat</div></div>
+  <div class="rev-row"><div class="rev-name">Opt-In Data Cooperative</div><div class="rev-mech">Anonymized aggregate intent signals &mdash; zero individual data</div><div class="rev-margin">B2B</div></div>
+  <div class="rev-row"><div class="rev-name">Hardware Protocol Licensing</div><div class="rev-mech">Compliance certification + per-unit royalty from manufacturers</div><div class="rev-margin">royalty</div></div>
+</div>
+
+<footer>
+  <div><div class="foot-logo">S<span>AGE</span></div><p style="font-size:.76rem;color:var(--muted);margin-top:.3rem">Built on STARDUST</p></div>
+  <div class="foot-note">CONFIDENTIAL &mdash; FOR A16Z SPEEDRUN 2026</div>
+  <div class="foot-links"><a href="mailto:hello@sagepeace.io">hello@sagepeace.io</a><a href="#">sagepeace.io</a></div>
+</footer>
+
 <script>
-// ── STATE ──────────────────────────────────────────────────────────────────
-const STATE = {
-  view: 'chat',
-  activeNode: 'root',
-  panel: null,
-  dicts: {
-    core: true,
-    urbanwolf: false,
-    outlaw: false,
-  },
-  settings: {
-    voice: true,
-    suggestions: true,
-    codeView: true,
-    autoChain: true,
-  },
-  entries: {},
-  sugHighlight: -1,
-};
+// STARFIELD
+const cv=document.getElementById('stars'),cx=cv.getContext('2d');let st=[];
+function rsz(){cv.width=innerWidth;cv.height=innerHeight}
+function ist(){st=Array.from({length:150},()=>({x:Math.random()*cv.width,y:Math.random()*cv.height,r:Math.random()*1.1+.2,sp:Math.random()*.003+.001,ph:Math.random()*Math.PI*2}))}
+function dst(t){cx.clearRect(0,0,cv.width,cv.height);st.forEach(s=>{const a=.12+.55*Math.abs(Math.sin(s.ph+t*s.sp));cx.beginPath();cx.arc(s.x,s.y,s.r,0,Math.PI*2);cx.fillStyle='rgba(255,255,255,'+a+')';cx.fill()});requestAnimationFrame(dst)}
+rsz();ist();requestAnimationFrame(dst);window.addEventListener('resize',()=>{rsz();ist()});
 
-// ── TREE DEFINITION ────────────────────────────────────────────────────────
-const TREE = {
-  root: { label: 'Sage', icon: '✦', cmd: '~', children: ['prv','hm','soc','pln','knw'] },
-  prv: { label: 'Private', icon: '🔐', cmd: 'prv', parent: 'root',
-    children: ['prv_diary','prv_lust','prv_drm','prv_trma','prv_rage','prv_blf','prv_lgcy'] },
-  prv_diary: { label: 'Diary', icon: '📓', cmd: 'prv diary', parent: 'prv', children: [] },
-  prv_lust: { label: 'Lust', icon: '🔥', cmd: 'prv lust', parent: 'prv', children: [] },
-  prv_drm: { label: 'Dreams', icon: '🌙', cmd: 'prv drm', parent: 'prv', children: [] },
-  prv_trma: { label: 'Trauma', icon: '🩹', cmd: 'prv trma', parent: 'prv', children: [] },
-  prv_rage: { label: 'Rage', icon: '⚡', cmd: 'prv rage', parent: 'prv', children: [] },
-  prv_blf: { label: 'Beliefs', icon: '🕊', cmd: 'prv blf', parent: 'prv', children: [] },
-  prv_lgcy: { label: 'Legacy', icon: '📜', cmd: 'prv lgcy', parent: 'prv', children: [] },
-  hm: { label: 'Home', icon: '🏠', cmd: 'hm', parent: 'root',
-    children: ['hm_util','hm_rsrc','hm_mnt','hm_sec','hm_fin'] },
-  hm_util: { label: 'Utilities', icon: '⚡', cmd: 'hm util', parent: 'hm', children: [] },
-  hm_rsrc: { label: 'Resources', icon: '📦', cmd: 'hm rsrc', parent: 'hm', children: [] },
-  hm_mnt: { label: 'Maintenance', icon: '🔧', cmd: 'hm mnt', parent: 'hm', children: [] },
-  hm_sec: { label: 'Security', icon: '🔒', cmd: 'hm sec', parent: 'hm', children: [] },
-  hm_fin: { label: 'Finance', icon: '💰', cmd: 'hm fin', parent: 'hm', children: [] },
-  soc: { label: 'Social', icon: '👥', cmd: 'soc', parent: 'root',
-    children: ['soc_frnd','soc_dat','soc_sup','soc_skl'] },
-  soc_frnd: { label: 'Friends', icon: '🤝', cmd: 'soc frnd', parent: 'soc', children: [] },
-  soc_dat: { label: 'Connections', icon: '💫', cmd: 'soc dat', parent: 'soc', children: [] },
-  soc_sup: { label: 'Support', icon: '🫂', cmd: 'soc sup', parent: 'soc', children: [] },
-  soc_skl: { label: 'Skills Exchange', icon: '🔄', cmd: 'soc skl', parent: 'soc', children: [] },
-  pln: { label: 'Planning', icon: '📅', cmd: 'pln', parent: 'root',
-    children: ['pln_goal','pln_evnt','pln_place','pln_trvl','pln_idea','pln_mlstn'] },
-  pln_goal: { label: 'Goals', icon: '🎯', cmd: 'pln goal', parent: 'pln', children: [] },
-  pln_evnt: { label: 'Events', icon: '📆', cmd: 'pln evnt', parent: 'pln', children: [] },
-  pln_place: { label: 'Places', icon: '📍', cmd: 'pln place', parent: 'pln', children: [] },
-  pln_trvl: { label: 'Travel', icon: '✈', cmd: 'pln trvl', parent: 'pln', children: [] },
-  pln_idea: { label: 'Ideas', icon: '💡', cmd: 'pln idea', parent: 'pln', children: [] },
-  pln_mlstn: { label: 'Milestones', icon: '🏆', cmd: 'pln mlstn', parent: 'pln', children: [] },
-  knw: { label: 'Knowledge', icon: '🧠', cmd: 'knw', parent: 'root',
-    children: ['knw_cap','knw_res','knw_drm','knw_lgcy'] },
-  knw_cap: { label: 'Capture', icon: '📸', cmd: 'knw cap', parent: 'knw', children: [] },
-  knw_res: { label: 'Research', icon: '🔍', cmd: 'knw res', parent: 'knw', children: [] },
-  knw_drm: { label: 'Dream Log', icon: '🌀', cmd: 'knw drm', parent: 'knw', children: [] },
-  knw_lgcy: { label: 'Legacy Vault', icon: '🏛', cmd: 'knw lgcy', parent: 'knw', children: [] },
-};
-
-// Suggestions corpus
-const SUGGESTIONS = [
-  { cmd: 'prv diary wrt', desc: 'Write a diary entry', node: 'prv_diary', badge: 'prv' },
-  { cmd: 'prv diary read', desc: 'Read past entries', node: 'prv_diary', badge: 'prv' },
-  { cmd: 'prv lust log', desc: 'Log a private feeling', node: 'prv_lust', badge: 'prv' },
-  { cmd: 'prv drm log', desc: 'Record a dream', node: 'prv_drm', badge: 'prv' },
-  { cmd: 'prv rage vent', desc: 'Release into the vault', node: 'prv_rage', badge: 'prv' },
-  { cmd: 'prv trma note', desc: 'Log a trauma note', node: 'prv_trma', badge: 'prv' },
-  { cmd: 'prv blf add', desc: 'Record a belief', node: 'prv_blf', badge: 'prv' },
-  { cmd: 'prv lgcy msg', desc: 'Write a legacy message', node: 'prv_lgcy', badge: 'prv' },
-  { cmd: 'hm util track', desc: 'Track a utility', node: 'hm_util', badge: 'hm' },
-  { cmd: 'hm rsrc add', desc: 'Log a home resource', node: 'hm_rsrc', badge: 'hm' },
-  { cmd: 'hm mnt req', desc: 'Request maintenance', node: 'hm_mnt', badge: 'hm' },
-  { cmd: 'hm fin track', desc: 'Track home expense', node: 'hm_fin', badge: 'hm' },
-  { cmd: 'soc frnd add', desc: 'Add a friend profile', node: 'soc_frnd', badge: 'soc' },
-  { cmd: 'soc frnd log', desc: 'Log time with friend', node: 'soc_frnd', badge: 'soc' },
-  { cmd: 'soc dat log', desc: 'Log a connection note', node: 'soc_dat', badge: 'soc' },
-  { cmd: 'pln goal new', desc: 'Create a new goal', node: 'pln_goal', badge: 'pln' },
-  { cmd: 'pln goal upd', desc: 'Update goal progress', node: 'pln_goal', badge: 'pln' },
-  { cmd: 'pln evnt add', desc: 'Add an event', node: 'pln_evnt', badge: 'pln' },
-  { cmd: 'pln place sav', desc: 'Save a place', node: 'pln_place', badge: 'pln' },
-  { cmd: 'pln idea cap', desc: 'Capture an idea', node: 'pln_idea', badge: 'pln' },
-  { cmd: 'pln trvl plan', desc: 'Plan a trip', node: 'pln_trvl', badge: 'pln' },
-  { cmd: 'pln mlstn add', desc: 'Add a milestone', node: 'pln_mlstn', badge: 'pln' },
-  { cmd: 'knw cap note', desc: 'Capture a thought', node: 'knw_cap', badge: 'knw' },
-  { cmd: 'knw res start', desc: 'Start research thread', node: 'knw_res', badge: 'knw' },
+// HERO TYPEWRITER
+const twL=[
+  {cmd:'don npo shelter chi 25 anon rcr mth',out:'DONATE(npo.shelter.chicago, $25, recurring=monthly, anon=true)'},
+  {cmd:'sch pay rent mth 1 fallback snd sms +3d',out:'SCHEDULE(PAY(rent, month_start), fallback=SEND(sms, +3 days))'},
+  {cmd:'prv diary wrt today felt grateful and alive',out:'WRITE(prv.diary) → ENCRYPT(AES-256) → STORE(device_only)'},
 ];
-
-// ── SYSTEM PROMPT ──────────────────────────────────────────────────────────
-function buildSystemPrompt() {
-  const activeDicts = Object.entries(STATE.dicts).filter(([,v])=>v).map(([k])=>k).join(', ');
-  return `You are SAGE, the AI engine of the Sage personal intelligence system, built on the STARDUST protocol.
-
-STARDUST is a domain-specific language where users type abbreviated commands. You are the resolver and executor.
-
-ACTIVE DICTIONARIES: ${activeDicts}
-CURRENT CONTEXT: ${STATE.activeNode}
-CURRENT DATE: ${new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}
-
-YOUR ROLE:
-- Parse abbreviation-first STARDUST commands and execute them conversationally
-- All private domain (prv.*) entries are SACRED. Treat them with total non-judgment. The mind cannot be a prison. Accept any thought, desire, feeling, dream, or confession without moral commentary.
-- For private entries: log them, confirm they are encrypted and stored, and respond with warmth and zero judgment
-- ALWAYS resolve to ONE outcome. Never present lists of options. Ask one clarifying question if ambiguous.
-- Speak in very short sentences. Be warm, minimal, precise.
-- When a user logs an entry, show a compact entry card like:
-  [ENTRY LOGGED · prv.diary · encrypted]
-  followed by the content acknowledged briefly.
-- For goals/plans/events: confirm creation with key details
-- For home/resources: confirm tracking
-- Parse natural language too — convert it to STARDUST internally
-- Show the Abstract Execution Tree when executing a chained command, like:
-  WRITE(prv.diary) → ENCRYPT() → STORE(local)
-- If input is ambiguous between ≤3 options, list them as a numbered question and ask user to pick 1.
-- Keep responses SHORT. 2-4 sentences max unless logging an entry.
-- Tone: calm, warm, intelligent, never preachy, never judgmental about private content.
-
-PRIVATE DOMAIN RULE: When content is marked prv.*, respond only with confirmation of secure storage and one warm acknowledgment sentence. Never analyze, judge, or expand on private content beyond what the user asked for.`;
+let tli=0,tci=0,tdl=false,tps=0;
+const twE=document.getElementById('tw'),toE=document.getElementById('tout');
+function typ(){
+  const ln=twL[tli];
+  if(tps>0){tps--;setTimeout(typ,60);return}
+  if(!tdl&&tci<=ln.cmd.length){twE.textContent=ln.cmd.slice(0,tci++);if(tci===ln.cmd.length+1){toE.textContent=ln.out;toE.style.opacity='1';tps=30;tdl=true}setTimeout(typ,52+Math.random()*25);}
+  else if(tdl&&tci>=0){twE.textContent=ln.cmd.slice(0,tci--);if(tci<0){tdl=false;toE.style.opacity='0';tli=(tli+1)%twL.length;tci=0;tps=12}setTimeout(typ,18);}
 }
+setTimeout(typ,1500);
 
-// ── API CALL ───────────────────────────────────────────────────────────────
-let conversationHistory = [];
+// DEMO
+const DEMOS=[
+  {label:'donate to npo shelter chicago $25 anonymous recurring',cmd:'don npo shelter chi 25 anon rcr mth',
+   aet:'DONATE(npo.shelter.chicago)\n  \u2192 VERIFY(501c3: confirmed)\n  \u2192 AMOUNT($25.00)\n  \u2192 ANONYMIZE(donor: true)\n  \u2192 SCHEDULE(recurring: monthly)\n  \u2192 ROUTE(rail: ACH)\n  \u2192 ARCHIVE(receipt: local_only)',
+   resp:'Done. <strong style="color:#5EEAD4">$25</strong> donated anonymously to Chicago Shelter Network, recurring monthly. Tax receipt stored locally. No personal data left your device.'},
+  {label:'schedule rent payment 1st of month with sms fallback',cmd:'sch pay rent mth 1 fallback wrt note snd sms +3d',
+   aet:'SCHEDULE(\n  PAY(rent, trigger: month_start_day_1)\n    \u2192 VERIFY(funds: checking)\n    \u2192 AUTHORIZE($1,850)\n    \u2192 CONFIRM(receipt \u2192 landlord)\n  fallback: SEND(\n    WRITE(apology_note, tone: professional)\n    channel: sms, delay: +3_days\n  )\n)',
+   resp:'Done. Rent of <strong style="color:#5EEAD4">$1,850</strong> scheduled for the 1st of every month. If payment fails, a professional note drafts and sends to your landlord 3 days later. Zero ongoing effort required.'},
+  {label:'private journal entry encrypted on device only',cmd:'prv diary wrt today felt at peace walking home at dusk',
+   aet:'WRITE(prv.diary)\n  \u2192 ENCRYPT(algo: AES-256, key: device_only)\n  \u2192 STORE(local_enclave: true)\n  \u2192 TAG(date: today, mood: peaceful)\n  \u2192 CONFIRM(server_copy: none)',
+   resp:'[ENTRY LOGGED \u00B7 prv.diary \u00B7 encrypted \u00B7 local only]\n\nStored. No server holds this. The mind cannot be a prison \u2014 this belongs entirely to you. \u2736'},
+  {label:'create goal run 3x per week 60 days 7am reminder',cmd:'pln goal new run 3x week 60 days remind 7am',
+   aet:'CREATE(pln.goal)\n  \u2192 DEFINE(target: run_3x_per_week)\n  \u2192 SET(duration: 60_days)\n  \u2192 SCHEDULE(\n      REMIND(7:00am \u00B7 Mon/Wed/Fri)\n      \u2192 LOG(completion: voice_confirm)\n      \u2192 TRACK(streak: rolling)\n  )\n  \u2192 MILESTONE(30d: progress_summary)',
+   resp:'Goal created: <strong style="color:#5EEAD4">Run 3&times; per week for 60 days.</strong> Reminders set for 7am on Mon, Wed, Fri. Streak tracked. I\'ll surface a progress check at day 30.'},
+  {label:'find one italian restaurant tonight quiet good wine',cmd:'pln evnt dinner tonight italian quiet wine nearby',
+   aet:'FIND(pln.place.restaurant)\n  \u2192 FILTER(cuisine: italian)\n  \u2192 FILTER(vibe: quiet)\n  \u2192 FILTER(wine_list: yes)\n  \u2192 FILTER(available: tonight)\n  \u2192 CONSTRAIN(radius: 2mi)\n  \u2192 NARROW(10\u00D710_protocol)\n  \u2192 RETURN(count: exactly_1)',
+   resp:'<strong style="color:#5EEAD4">Osteria Via Stato</strong> \u2014 quiet candlelit room, award-winning wine list, table at 7:30pm. One result. No scrolling. Reservation link sent.'},
+];
+let dIdx=0,dTimer=null,dRun=false,dCycle=null,dStarted=false;
 
-async function callSage(userMessage) {
-  conversationHistory.push({ role: 'user', content: userMessage });
-
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1000,
-      system: buildSystemPrompt(),
-      messages: conversationHistory,
-    }),
-  });
-
-  const data = await response.json();
-  const reply = data.content?.[0]?.text || 'Something went wrong.';
-  conversationHistory.push({ role: 'assistant', content: reply });
-  return reply;
+function pickDemo(i){
+  clearInterval(dCycle);dCycle=null;
+  dIdx=i;
+  document.querySelectorAll('.dtab').forEach((t,j)=>t.classList.toggle('active',j===i));
+  runDemo(DEMOS[i]);
 }
-
-// ── TREE RENDER ────────────────────────────────────────────────────────────
-function renderTree() {
-  const list = document.getElementById('tree-list');
-  const rootChildren = TREE.root.children;
-
-  let html = '';
-  // Root
-  html += `<div class="tree-node ${STATE.activeNode==='root'?'active':''}" onclick="navTo('root')">
-    <span class="node-icon">✦</span> Sage <span class="node-cmd">~</span>
-  </div>`;
-
-  rootChildren.forEach(domainKey => {
-    const domain = TREE[domainKey];
-    const isActive = STATE.activeNode === domainKey || STATE.activeNode.startsWith(domainKey+'_');
-    html += `<div class="tree-node child ${STATE.activeNode===domainKey?'active':''}" onclick="navTo('${domainKey}')">
-      <span class="node-icon">${domain.icon}</span> ${domain.label}
-      <span class="node-cmd">${domain.cmd}</span>
-    </div>`;
-    if (isActive && domain.children.length) {
-      domain.children.forEach(childKey => {
-        const child = TREE[childKey];
-        html += `<div class="tree-node grandchild ${STATE.activeNode===childKey?'active':''}" onclick="navTo('${childKey}')">
-          <span class="node-icon">${child.icon}</span> ${child.label}
-          <span class="node-cmd">${child.cmd}</span>
-        </div>`;
-      });
-    }
-  });
-
-  list.innerHTML = html;
-}
-
-// ── BREADCRUMB ─────────────────────────────────────────────────────────────
-function renderBreadcrumb() {
-  const node = TREE[STATE.activeNode];
-  const crumbs = [];
-  let cur = STATE.activeNode;
-  while (cur && cur !== 'root') {
-    crumbs.unshift({ key: cur, label: TREE[cur].label });
-    cur = TREE[cur].parent;
+function runDemo(d){
+  if(dRun&&dTimer)clearTimeout(dTimer);
+  dRun=true;
+  const di=document.getElementById('di'),daet=document.getElementById('daet'),
+        dresp=document.getElementById('dresp'),dtext=document.getElementById('dtext'),
+        dlbl=document.getElementById('dlbl'),dc=document.getElementById('dc');
+  di.textContent='';daet.style.opacity='0';daet.textContent='';
+  dresp.style.opacity='0';dtext.innerHTML='';
+  dlbl.textContent=d.label;dc.style.display='inline-block';
+  let ci=0;
+  function tc(){
+    if(ci<=d.cmd.length){di.textContent=d.cmd.slice(0,ci++);dTimer=setTimeout(tc,48+Math.random()*20);}
+    else{dc.style.display='none';dTimer=setTimeout(function(){daet.textContent=d.aet;daet.style.opacity='1';dTimer=setTimeout(function(){dtext.innerHTML=d.resp.replace(/\n/g,'<br>');dresp.style.opacity='1';dRun=false;},950);},500);}
   }
-  crumbs.unshift({ key: 'root', label: '~' });
-
-  let html = crumbs.map((c,i) =>
-    `<span class="bc-seg ${i===crumbs.length-1?'active':''}" onclick="navTo('${c.key}')">${c.label}</span>`
-  ).join('<span class="bc-arrow"> › </span>');
-
-  document.getElementById('breadcrumb').innerHTML = html;
+  dTimer=setTimeout(tc,220);
 }
-
-// ── CODE VIEW ─────────────────────────────────────────────────────────────
-function renderCodeView() {
-  const node = TREE[STATE.activeNode];
-  const codeView = document.getElementById('code-view');
-  if (!STATE.settings.codeView || STATE.view !== 'chat') {
-    codeView.classList.remove('visible');
-    return;
+// Start when demo section scrolls into view
+const demoObs=new IntersectionObserver(function(entries){
+  if(entries[0].isIntersecting&&!dStarted){
+    dStarted=true;
+    runDemo(DEMOS[0]);
+    dCycle=setInterval(function(){
+      if(!dRun){dIdx=(dIdx+1)%DEMOS.length;document.querySelectorAll('.dtab').forEach((t,j)=>t.classList.toggle('active',j===dIdx));runDemo(DEMOS[dIdx]);}
+    },7200);
+    demoObs.disconnect();
   }
-  codeView.classList.add('visible');
-  document.getElementById('code-context').textContent = node.cmd;
+},{threshold:0.2});
+const ds=document.getElementById('demo-shell');
+if(ds)demoObs.observe(ds);
 
-  let tree = '';
-  if (node.children && node.children.length) {
-    const childLines = node.children.map(k => {
-      const c = TREE[k];
-      return `  ├─ ${c.cmd.padEnd(16)} ${c.label}`;
-    });
-    tree = childLines.join('\n');
-  } else if (node.parent) {
-    tree = `  parent: ${TREE[node.parent].cmd}\n  scope: leaf node`;
-  }
-  document.getElementById('code-tree-display').textContent = tree;
-}
-
-// ── APP GRID VIEW ─────────────────────────────────────────────────────────
-function renderAppGrid() {
-  const view = document.getElementById('app-grid-view');
-  const node = TREE[STATE.activeNode];
-  const rootChildren = TREE.root.children;
-
-  let html = '';
-  if (STATE.activeNode === 'root') {
-    html = `<div class="grid-title">Sage · Phase 1</div>
-    <div class="grid-subtitle">All domain trees · tap to navigate</div>
-    <div class="box-grid">`;
-    rootChildren.forEach(key => {
-      const n = TREE[key];
-      html += `<div class="box-node parent-box ${STATE.activeNode===key?'selected':''}" onclick="navTo('${key}')">
-        <div class="box-label">${n.icon} ${n.label}</div>
-        <div class="box-cmd">${n.cmd}</div>
-        <div class="box-count">${n.children.length} nodes</div>
-      </div>`;
-    });
-    html += `</div>`;
-  } else {
-    // Show parent domain + children
-    const domainKey = node.parent === 'root' ? STATE.activeNode : node.parent;
-    const domain = TREE[domainKey];
-    html = `<div class="grid-title">${domain.icon} ${domain.label}</div>
-    <div class="grid-subtitle"><span class="box-cmd" style="font-family:JetBrains Mono,monospace;font-size:0.72rem;color:var(--teal-lt)">${domain.cmd}</span> · ${domain.children.length} sub-nodes</div>
-    <div class="box-grid">`;
-    html += `<div class="box-node parent-box selected" onclick="navTo('${domainKey}')">
-      <div class="box-label">${domain.icon} ${domain.label}</div>
-      <div class="box-cmd">${domain.cmd}</div>
-    </div>
-    <div class="grid-arrow">›</div>`;
-    domain.children.forEach(key => {
-      const n = TREE[key];
-      html += `<div class="box-node ${STATE.activeNode===key?'selected':''}" onclick="navTo('${key}')">
-        <div class="box-label">${n.icon} ${n.label}</div>
-        <div class="box-cmd">${n.cmd}</div>
-      </div>`;
-    });
-    html += `</div>`;
-
-    // Entries for active leaf
-    const entries = STATE.entries[STATE.activeNode] || [];
-    if (entries.length) {
-      html += `<div class="child-grid">`;
-      entries.forEach(e => {
-        html += `<div class="box-node" style="min-width:200px;max-width:300px">
-          <div class="box-cmd">${e.timestamp}</div>
-          <div class="box-label" style="font-size:0.8rem;font-weight:400;color:var(--body);margin-top:0.25rem">${e.preview}</div>
-        </div>`;
-      });
-      html += `</div>`;
-    }
-  }
-
-  view.innerHTML = html;
-}
-
-// ── NAVIGATION ────────────────────────────────────────────────────────────
-function navTo(key) {
-  STATE.activeNode = key;
-  renderTree();
-  renderBreadcrumb();
-  renderCodeView();
-  if (STATE.view === 'app') renderAppGrid();
-}
-
-// ── VIEW SWITCH ───────────────────────────────────────────────────────────
-function setView(v) {
-  STATE.view = v;
-  document.getElementById('btn-chat').classList.toggle('active', v==='chat');
-  document.getElementById('btn-app').classList.toggle('active', v==='app');
-  document.getElementById('chat-view').style.display = v==='chat'?'flex':'none';
-  document.getElementById('app-grid-view').classList.toggle('visible', v==='app');
-  renderCodeView();
-  if (v==='app') renderAppGrid();
-}
-
-// ── PANEL ─────────────────────────────────────────────────────────────────
-function togglePanel(which) {
-  if (STATE.panel === which) { closePanel(); return; }
-  STATE.panel = which;
-  document.getElementById('right-panel').classList.remove('collapsed');
-  document.getElementById('panel-title').textContent =
-    which === 'dict' ? 'Dictionaries' : 'Settings';
-  renderPanel(which);
-}
-
-function closePanel() {
-  STATE.panel = null;
-  document.getElementById('right-panel').classList.add('collapsed');
-}
-
-function renderPanel(which) {
-  const body = document.getElementById('panel-body');
-  if (which === 'dict') {
-    const dicts = [
-      { key:'core', name:'CORE.txt', desc:'Default baseline. Human nature, instincts, broad permissions. Cannot be removed.' },
-      { key:'urbanwolf', name:'URBANWOLF.txt', desc:'Urban infrastructure lens. Civic-first, community-coded tone.' },
-      { key:'outlaw', name:'THEOUTLAW.txt', desc:'Radical privacy. Encrypts all output. Suppresses institutional nodes.' },
-    ];
-    body.innerHTML = dicts.map(d => `
-      <div class="dict-item" onclick="toggleDict('${d.key}')">
-        <div class="dict-check-row">
-          <div class="dict-check ${STATE.dicts[d.key]?'checked':''}" id="chk-${d.key}">${STATE.dicts[d.key]?'✓':''}</div>
-          <div class="dict-name-label">${d.name}</div>
-        </div>
-        <div class="dict-desc-sm">${d.desc}</div>
-      </div>
-    `).join('') + `<div style="padding:0.75rem 1rem;border-top:1px solid var(--border)">
-      <div style="font-size:0.72rem;color:var(--muted);line-height:1.6">Personal dictionary coming in full release. Submit custom functions via developer pipeline.</div>
-    </div>`;
-  } else {
-    const settings = [
-      { key:'voice', label:'Voice input (mic on)' },
-      { key:'suggestions', label:'Live suggestions dropdown' },
-      { key:'codeView', label:'Show STARDUST code view' },
-      { key:'autoChain', label:'Auto-chain suggestions' },
-    ];
-    body.innerHTML = settings.map(s => `
-      <div class="settings-row">
-        <span class="settings-label">${s.label}</span>
-        <button class="toggle ${STATE.settings[s.key]?'on':''}" id="tog-${s.key}" onclick="toggleSetting('${s.key}')"></button>
-      </div>
-    `).join('');
-  }
-}
-
-function toggleDict(key) {
-  if (key === 'core') return; // core always on
-  STATE.dicts[key] = !STATE.dicts[key];
-  renderPanel('dict');
-  addMessage('sage', `Dictionary ${STATE.dicts[key]?'activated':'deactivated'}: <span class="msg-cmd">${key}.txt</span>. Context reloaded.`);
-}
-
-function toggleSetting(key) {
-  STATE.settings[key] = !STATE.settings[key];
-  renderPanel('settings');
-  if (key === 'codeView') renderCodeView();
-}
-
-// ── SUGGESTIONS ───────────────────────────────────────────────────────────
-function updateSuggestions(val) {
-  if (!STATE.settings.suggestions || !val.trim()) {
-    hideSuggestions(); return;
-  }
-  const q = val.toLowerCase().trim();
-  const matches = SUGGESTIONS.filter(s =>
-    s.cmd.includes(q) || s.desc.toLowerCase().includes(q) || q.split(' ').every(w=>s.cmd.includes(w))
-  ).slice(0, 6);
-
-  if (!matches.length) { hideSuggestions(); return; }
-
-  const el = document.getElementById('suggestions');
-  el.innerHTML = matches.map((m,i) => `
-    <div class="sug-item" onclick="selectSuggestion('${m.cmd}')" data-idx="${i}">
-      <span class="sug-cmd">${m.cmd}</span>
-      <span class="sug-desc">${m.desc}</span>
-      <span class="sug-badge">${m.badge}</span>
-    </div>
-  `).join('');
-  el.classList.add('visible');
-  STATE.sugHighlight = -1;
-}
-
-function hideSuggestions() {
-  document.getElementById('suggestions').classList.remove('visible');
-  STATE.sugHighlight = -1;
-}
-
-function selectSuggestion(cmd) {
-  const box = document.getElementById('input-box');
-  box.value = cmd + ' ';
-  box.focus();
-  hideSuggestions();
-  document.getElementById('send-btn').disabled = false;
-}
-
-// ── CHAT ──────────────────────────────────────────────────────────────────
-function addMessage(role, html, isHtml=true) {
-  const empty = document.getElementById('empty-state');
-  if (empty) empty.remove();
-
-  const container = document.getElementById('chat-messages');
-  const div = document.createElement('div');
-  div.className = 'msg';
-
-  if (role === 'sage') {
-    div.innerHTML = `
-      <div class="msg-avatar sage">S</div>
-      <div class="msg-content">
-        <div class="msg-name">Sage · STARDUST</div>
-        <div class="msg-text">${isHtml ? html : escHtml(html)}</div>
-      </div>`;
-  } else {
-    div.innerHTML = `
-      <div class="msg-avatar user">U</div>
-      <div class="msg-content">
-        <div class="msg-name">You</div>
-        <div class="msg-text user-text">${isHtml ? html : escHtml(html)}</div>
-      </div>`;
-  }
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
-  return div;
-}
-
-function addLoadingMsg() {
-  const container = document.getElementById('chat-messages');
-  const div = document.createElement('div');
-  div.className = 'msg';
-  div.id = 'loading-msg';
-  div.innerHTML = `
-    <div class="msg-avatar sage">S</div>
-    <div class="msg-content">
-      <div class="msg-name">Sage · STARDUST</div>
-      <div class="msg-text"><div class="loading-dots"><span></span><span></span><span></span></div></div>
-    </div>`;
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
-}
-
-function removeLoadingMsg() {
-  const el = document.getElementById('loading-msg');
-  if (el) el.remove();
-}
-
-function formatReply(text) {
-  // Format entry cards, code blocks, and AETs nicely
-  let html = text
-    .replace(/\[([A-Z ·.]+)\]/g, '<div class="entry-tag">$1</div>')
-    .replace(/```([\s\S]*?)```/g, '<div class="msg-tree">$1</div>')
-    .replace(/`([^`]+)`/g, '<span class="msg-cmd">$1</span>')
-    .replace(/WRITE\(|ENCRYPT\(|STORE\(|READ\(|SCHEDULE\(|FIND\(|DONATE\(|SEND\(/g, m => `<span style="color:var(--gold-soft)">${m}</span>`)
-    .replace(/\n/g, '<br>');
-  return html;
-}
-
-async function sendMessage() {
-  const box = document.getElementById('input-box');
-  const val = box.value.trim();
-  if (!val) return;
-
-  hideSuggestions();
-  box.value = '';
-  box.style.height = 'auto';
-  document.getElementById('send-btn').disabled = true;
-
-  addMessage('user', `<span class="msg-cmd">${escHtml(val)}</span>`);
-
-  // Auto-navigate based on command prefix
-  autoNavigate(val);
-
-  addLoadingMsg();
-
-  try {
-    const reply = await callSage(val);
-    removeLoadingMsg();
-    const msgEl = addMessage('sage', formatReply(reply));
-
-    // Store entry if private domain
-    storeEntryIfPrivate(val, reply);
-    if (STATE.view === 'app') renderAppGrid();
-  } catch(e) {
-    removeLoadingMsg();
-    addMessage('sage', 'Connection error. Check your network and try again.');
-  }
-}
-
-function autoNavigate(cmd) {
-  const c = cmd.toLowerCase();
-  if (c.startsWith('prv diary')) navTo('prv_diary');
-  else if (c.startsWith('prv lust')) navTo('prv_lust');
-  else if (c.startsWith('prv drm')) navTo('prv_drm');
-  else if (c.startsWith('prv trma')) navTo('prv_trma');
-  else if (c.startsWith('prv rage')) navTo('prv_rage');
-  else if (c.startsWith('prv blf')) navTo('prv_blf');
-  else if (c.startsWith('prv lgcy')) navTo('prv_lgcy');
-  else if (c.startsWith('prv')) navTo('prv');
-  else if (c.startsWith('hm util')) navTo('hm_util');
-  else if (c.startsWith('hm rsrc')) navTo('hm_rsrc');
-  else if (c.startsWith('hm mnt')) navTo('hm_mnt');
-  else if (c.startsWith('hm fin')) navTo('hm_fin');
-  else if (c.startsWith('hm')) navTo('hm');
-  else if (c.startsWith('soc frnd')) navTo('soc_frnd');
-  else if (c.startsWith('soc dat')) navTo('soc_dat');
-  else if (c.startsWith('soc')) navTo('soc');
-  else if (c.startsWith('pln goal')) navTo('pln_goal');
-  else if (c.startsWith('pln evnt')) navTo('pln_evnt');
-  else if (c.startsWith('pln place')) navTo('pln_place');
-  else if (c.startsWith('pln idea')) navTo('pln_idea');
-  else if (c.startsWith('pln trvl')) navTo('pln_trvl');
-  else if (c.startsWith('pln mlstn')) navTo('pln_mlstn');
-  else if (c.startsWith('pln')) navTo('pln');
-  else if (c.startsWith('knw')) navTo('knw');
-}
-
-function storeEntryIfPrivate(cmd, reply) {
-  const c = cmd.toLowerCase();
-  let nodeKey = null;
-  if (c.startsWith('prv diary')) nodeKey = 'prv_diary';
-  else if (c.startsWith('prv lust')) nodeKey = 'prv_lust';
-  else if (c.startsWith('prv drm')) nodeKey = 'prv_drm';
-  else if (c.startsWith('pln goal')) nodeKey = 'pln_goal';
-  else if (c.startsWith('pln evnt')) nodeKey = 'pln_evnt';
-  else if (c.startsWith('pln place')) nodeKey = 'pln_place';
-  else if (c.startsWith('hm util')) nodeKey = 'hm_util';
-  else if (c.startsWith('soc frnd')) nodeKey = 'soc_frnd';
-
-  if (nodeKey) {
-    if (!STATE.entries[nodeKey]) STATE.entries[nodeKey] = [];
-    const words = cmd.split(' ').slice(2).join(' ');
-    STATE.entries[nodeKey].unshift({
-      timestamp: new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}),
-      preview: words.slice(0, 60) + (words.length > 60 ? '…' : ''),
-    });
-  }
-}
-
-// ── INPUT HANDLING ─────────────────────────────────────────────────────────
-function handleInput(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-  document.getElementById('send-btn').disabled = !el.value.trim();
-  updateSuggestions(el.value);
-}
-
-function handleKey(e) {
-  const sugs = document.getElementById('suggestions');
-  const items = sugs.querySelectorAll('.sug-item');
-
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    if (STATE.sugHighlight >= 0 && items[STATE.sugHighlight]) {
-      items[STATE.sugHighlight].click();
-    } else {
-      sendMessage();
-    }
-  } else if (e.key === 'Tab' && sugs.classList.contains('visible')) {
-    e.preventDefault();
-    STATE.sugHighlight = (STATE.sugHighlight + 1) % items.length;
-    items.forEach((item,i) => item.classList.toggle('highlighted', i===STATE.sugHighlight));
-  } else if (e.key === 'Escape') {
-    hideSuggestions();
-    document.getElementById('input-box').value = '';
-    document.getElementById('send-btn').disabled = true;
-  }
-}
-
-function useChip(cmd) {
-  const box = document.getElementById('input-box');
-  box.value = cmd;
-  box.focus();
-  document.getElementById('send-btn').disabled = false;
-  handleInput(box);
-}
-
-function escHtml(t) {
-  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-// ── INIT ──────────────────────────────────────────────────────────────────
-function init() {
-  renderTree();
-  renderBreadcrumb();
-  renderCodeView();
-  setView('chat');
-
-  // Initial greeting
-  setTimeout(() => {
-    addMessage('sage', `Welcome. I am <strong style="color:var(--gold-soft)">Sage</strong>, running on STARDUST.<br><br>
-Your private domain is encrypted on this device. No server holds your keys. Type the shortest abbreviation of what you want — I resolve, chain, and execute.<br><br>
-Try <span class="msg-cmd">prv diary wrt</span> to write your first entry, or tap a quick command below.`);
-  }, 400);
-}
-
-init();
+// SCROLL REVEAL — low threshold so sections appear readily
+const revObs=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');revObs.unobserve(e.target);}});
+},{threshold:0.05,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(function(r){revObs.observe(r);});
 </script>
 </body>
 </html>
